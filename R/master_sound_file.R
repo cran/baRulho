@@ -2,15 +2,17 @@
 #' 
 #' \code{master_sound_file} creates a master sound file to be used in playback experiments related to sound degradation.
 #' @usage master_sound_file(X, file.name, dest.path = NULL, overwrite = FALSE, delay = 1, 
-#' gap.duration = 1, amp.marker = 2)
+#' gap.duration = 1, amp.marker = 2, flim = c(0, 4), cex = 14)
 #' @param X object of class 'extended_selection_table' created by the function \code{\link[warbleR]{selection_table}} from the warbleR package. The object must include the following additional columns: 'bottom.freq' and 'top.freq'.
 #' @param file.name Character string indicating the name of the sound file.
 #' @param dest.path Character string containing the directory path where the sound file will be saved.
 #' If \code{NULL} (default) then the current working directory will be used instead.
 #' @param overwrite Logical argument to determine if the function will overwrite any existing sound file with the same file name. Default is \code{FALSE}.
-#' @param delay Numeric vector of length 1 to control the duration (in s) of a silence gap at the beginning of the sound file. This can be useful to allow some time at the start of the playback experiment. Default is 1.
+#' @param delay Numeric vector of length 1 to control the duration (in s) of a silence gap at the beginning (and at the end) of the sound file. This can be useful to allow some time at the start of the playback experiment. Default is 1.
 #' @param gap.duration Numeric vector of length 1 to control the duration (in s) of silence gaps to be placed in between signals. Default is 1 s.
 #' @param amp.marker Numeric vector of length 1 to use as a constant to amplify markers amplitude. This is useful to increase the amplitude of markers in relation to those of signals, so it is picked up at further distances. Default is 2.
+#' @param flim Numeric vector of length 2 to control the frequency range in which the markers would be found. If \code{NULL} markers would be display across the whole frequency range. Default is c(0, 4).
+#' @param cex Numeric vector of length 1 indicating the font size for the start and end markers. Default is 14.
 #' @return Extended selection table similar to input data, but includes a new column (cross.correlation)
 #' with the spectrogram cross-correlation coefficients.
 #' @export
@@ -47,7 +49,7 @@
 #' }
 # last modification on jan-06-2020 (MAS)
 
-master_sound_file <- function(X, file.name, dest.path = NULL, overwrite = FALSE, delay = 1, gap.duration = 1, amp.marker = 2){
+master_sound_file <- function(X, file.name, dest.path = NULL, overwrite = FALSE, delay = 1, gap.duration = 1, amp.marker = 2, flim = c(0, 4), cex = 14){
   
   # is extended sel tab
   if (!warbleR::is_extended_selection_table(X)) 
@@ -57,15 +59,24 @@ master_sound_file <- function(X, file.name, dest.path = NULL, overwrite = FALSE,
   if (length(unique(attr(X, "check.results")$sample.rate)) > 1) 
     stop("all wave objects in the extended selection table must have the same sampling rate (they can be homogenized using warbleR::resample_est())")
   
+  #check path to working directory
+  if (is.null(dest.path)) dest.path <- getwd() else 
+    if (!dir.exists(dest.path)) stop("'dest.path' provided does not exist")  else
+      dest.path <- normalizePath(dest.path)
+    
   # make overwrite FALSE if file doesn't exist
   if (!overwrite & file.exists(file.path(dest.path, file.name))) 
     stop("output .wav file already exists and overwrite is 'FALSE'")
-    
-  #check path to working directory
-  if (is.null(dest.path)) dest.path <- getwd() else 
-    if (!dir.exists(dest.path)) stop("'dest.path' provided does not exist") 
   
+    # check if ghost script is installed
+    gsexe <- tools::find_gs_cmd()
+   
+    # warning if ghostscript not found
+     if (!nzchar(gsexe)) 
+      warning("GhostScript was not found. It produces clearer start and end marker. You can download it from 'https://ghostscript.com/'. using 'png()' instead.")
+    
   # set frequency range for markers
+  if (is.null(flim))  
     flim <- c(0, attr(X, "check.results")$sample.rate[1] / 2)
     
  # at least 3 rows
@@ -74,8 +85,12 @@ master_sound_file <- function(X, file.name, dest.path = NULL, overwrite = FALSE,
   
   # save par settings
   oldpar <- par(no.readonly = TRUE)   
-  on.exit(par(oldpar))
+  on.exit(suppressWarnings(par(oldpar)))
     
+  # save image of start marker in temporary directory
+  if (!nzchar(gsexe)) 
+  png(filename = file.path(tempdir(), "strt_mrkr-img.png"), pointsize = 10)
+  
   # remove margins in graphic device
   par(mar = rep(0, 4))
   
@@ -83,26 +98,47 @@ master_sound_file <- function(X, file.name, dest.path = NULL, overwrite = FALSE,
   plot(0, type='n',axes = FALSE, ann = FALSE, xlim = c(0, 1), ylim = c(0, 1))
   
   # add text
-  text(x = 0.5, y = 0.5, labels = "*start+", cex = 14, font = 1)
+  text(x = 0.5, y = 0.5, labels = "*start+", cex = cex, font = 2)
   
   # save image of start marker in temporary directory
+  if (nzchar(gsexe)) 
   dev2bitmap(file.path(tempdir(), "strt_mrkr-img.png"), type = "pngmono", res = 30)
+  
+  # close graph
+  dev.off()
+  
+  # make image of start marker
+  strt_mrkr <- warbleR::image_to_wave(file = file.path(tempdir(), "strt_mrkr-img.png"), plot = FALSE, flim = flim, samp.rate = attr(X, "check.results")$sample.rate[1])
+  
+  # remove image file
+  unlink(file.path(tempdir(), "strt_mrkr-img.png"))
+  
+  # save image of end marker in temporary directory
+  if (!nzchar(gsexe)) 
+  png(filename = file.path(tempdir(), "end_mrkr-img.png"), pointsize = 10)
+  
+  # remove margins in graphic device
+  par(mar = rep(0, 4))
   
   # empty plot
   plot(0, type='n',axes = FALSE, ann = FALSE, xlim = c(0, 1), ylim = c(0, 1))
   
   # add text
-  text(x = 0.5, y = 0.5, labels = "+end*-", cex = 14, font = 1)
+  text(x = 0.5, y = 0.5, labels = "+end*-", cex = cex, font = 2)
   
   # save image of end marker in temporary directory
-  dev2bitmap(file.path(tempdir(), "end_mrkr-img.png"), type = "pngmono", res = 30)
+  if (nzchar(gsexe)) 
+    dev2bitmap(file.path(tempdir(), "end_mrkr-img.png"), type = "pngmono", res = 30)
+  
+  # close graph
+  dev.off()
   
   # conver to wave both
-  strt_mrkr <- warbleR::image_to_wave(file = file.path(tempdir(), "strt_mrkr-img.png"), plot = FALSE, flim = flim, samp.rate = attr(X, "check.results")$sample.rate[1])
-  
   end_mrkr <- warbleR::image_to_wave(file = file.path(tempdir(), "end_mrkr-img.png"), plot = FALSE, flim = flim, samp.rate = attr(X, "check.results")$sample.rate[1])
   
- 
+  # remove image file
+  unlink(file.path(tempdir(), "end_mrkr-img.png"))
+  
   # remove plots 
   nll <- try(dev.off(), silent = TRUE)
   
@@ -177,10 +213,7 @@ master_sound_file <- function(X, file.name, dest.path = NULL, overwrite = FALSE,
   
   # add end marker 
   plbck <- seewave::pastew(end_mrkr, plbck, output =  "Wave")
-  
-  # normalize whole master playback
-  plbck <- tuneR::normalize(plbck, unit = "16")
-  
+
   # margin range for selections on markers
   mar.f <- (flim[2] - flim[1]) / 3
 
@@ -194,15 +227,24 @@ master_sound_file <- function(X, file.name, dest.path = NULL, overwrite = FALSE,
     start = c(delay, X$pb.start, X$pb.end[nrow(X)] + gap.duration), 
     end = c(delay + dur_strt_mrkr, X$pb.end, length(plbck@left) / plbck@samp.rate)
     )
-
+    
+  # add bottom freq info
   if (!is.null(X$bottom.freq))
   sel.tab$bottom.freq <- c(flim[1] + mar.f, X$bottom.freq, flim[1] + mar.f) 
   
+  # add top freq info
   if (!is.null(X$top.freq))
   sel.tab$top.freq <- c(flim[2] - mar.f, X$top.freq, flim[2] - mar.f)
   
-  
+  # add start & end markers
   sel.tab$orig.sound.file <- c("start_marker", X$sound.files, "end_marker")
+  
+  # add delay at the end
+  if (delay > 0)
+    plbck <- seewave::addsilw(plbck, d = delay, output = "Wave", at = "end")  
+  
+  # normalize whole master playback
+  plbck <- tuneR::normalize(plbck, unit = "16")
   
   # save master playback
   tuneR::writeWave(plbck, file.path(dest.path, file.name), extensible = FALSE)

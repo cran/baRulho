@@ -2,7 +2,7 @@
 #' 
 #' \code{snr} measures attenuation as signal-to-noise ratio of signals referenced in an extended selection table.
 #' @usage snr(X, mar, parallel = 1, pb = TRUE, eq.dur = FALSE,
-#' noise.ref = "adjacent", type = 1, bp = NULL, hop.size = 1, wl = NULL)
+#' noise.ref = "adjacent", type = 1, bp = NULL, output = "est", hop.size = 1, wl = NULL)
 #' @param X object of class 'extended_selection_table' created by the function \code{\link[warbleR]{selection_table}} from the warbleR package.
 #' @param mar numeric vector of length 1. Specifies the margins adjacent to
 #'   the start and end points of selection over which to measure ambient noise.
@@ -23,11 +23,12 @@
 #' \item \code{2}: ratio of the difference between S amplitude envelope root mean square and N amplitude envelope root mean square to N amplitude envelope root mean square (\code{(rms(env(S)) - rms(env(N)))/rms(env(N))}, as proposed by Dabelsteen et al (1993))
 #' }
 #' @param bp Numeric vector of length 2 giving the lower and upper limits of a frequency bandpass filter (in kHz). Default is \code{NULL}.
+#' @param output Character vector of length 1 to determine if an extended selection table ('est', default) or a data frame ('data.frame').
 #' @param hop.size A numeric vector of length 1 specifying the time window duration (in ms). Default is 1 ms, which is equivalent to ~45 wl for a 44.1 kHz sampling rate. Ignored if 'wl' is supplied.
 #' @param wl A numeric vector of length 1 specifying the window length of the spectrogram, default 
 #' is NULL. Ignored if \code{bp = NULL}. If supplied, 'hop.size' is ignored.
 #' Note that lower values will increase time resolution, which is more important for amplitude ratio calculations. 
-#' @return Extended selection table similar to input data, but also includes a new column (snr.attenuation)
+#' @return Extended selection table similar to input data, but also includes a new column (signal.to.noise.ratio)
 #' with the signal-to-noise ratio values.
 #' @export
 #' @name snr
@@ -56,9 +57,13 @@
 #last modification on nov-01-2019 (MAS)
 
 snr <- function(X, mar, parallel = 1, pb = TRUE, eq.dur = FALSE,
-                       noise.ref = "adjacent", type = 1, bp = NULL, hop.size = 1, 
+                       noise.ref = "adjacent", type = 1, bp = NULL, output = "est", hop.size = 1, 
                        wl = NULL){
   
+  
+  argus <- names(as.list(base::match.call()))
+  
+
   # set pb options 
   on.exit(pbapply::pboptions(type = .Options$pboptions$type), add = TRUE)
   
@@ -69,6 +74,9 @@ snr <- function(X, mar, parallel = 1, pb = TRUE, eq.dur = FALSE,
   # If parallel is not numeric
   if (!is.numeric(parallel)) stop("'parallel' must be a numeric vector of length 1") 
   if (any(!(parallel %% 1 == 0),parallel < 1)) stop("'parallel' should be a positive integer")
+  
+  #check output
+  if (!any(output %in% c("est", "data.frame"))) stop("'output' must be 'est' or 'data.frame'")  
   
   # hopsize  
   if (!is.numeric(hop.size) | hop.size < 0) stop("'parallel' must be a positive number") 
@@ -129,7 +137,7 @@ snr <- function(X, mar, parallel = 1, pb = TRUE, eq.dur = FALSE,
       f <- r$sample.rate
       
       # set margin to half of signal duration
-      if (eq.dur) mar <- (X$end[y] - X$start[y])/2
+      if (eq.dur) mar <- (X$end[y] - X$start[y]) else if(all(argus != "mar")) stop("'mar' must be provided when 'eq.dur = FALSE'")
       
       #reset time coordinates of signals if lower than 0 o higher than duration
       stn <- X$start[y] - mar
@@ -167,7 +175,7 @@ snr <- function(X, mar, parallel = 1, pb = TRUE, eq.dur = FALSE,
   X$TEMP....y <- names(envs) <- paste(X$sound.files, X$selec, sep = "-")
 
   # calculate SNR 
-  X$snr.attenuation <- sapply(1:nrow(X), function(y){
+  X$signal.to.noise.ratio <- sapply(1:nrow(X), function(y){
     
     if (X$signal.type[y] != "ambient"){
       
@@ -198,6 +206,8 @@ snr <- function(X, mar, parallel = 1, pb = TRUE, eq.dur = FALSE,
   
   # remove temporary column
   X$TEMP....y <- NULL  
+  
+  if (output == "data.frame") X <- as.data.frame(X)
   
   return(X)
   }

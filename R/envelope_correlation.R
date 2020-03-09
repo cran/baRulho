@@ -2,7 +2,7 @@
 #' 
 #' \code{envelope_correlation} measures amplitude envelope correlation of signals referenced in an extended selection table.
 #' @usage envelope_correlation(X, parallel = 1, pb = TRUE, method = 1, cor.method = "pearson", 
-#' ssmooth = NULL, msmooth = NULL, hop.size = 11.6, wl = NULL, ovlp = 70)
+#' ssmooth = NULL, msmooth = NULL, output = "est", hop.size = 11.6, wl = NULL, ovlp = 70)
 #' @param X object of class 'extended_selection_table' created by the function \code{\link[warbleR]{selection_table}} from the warbleR package.
 #' @param parallel Numeric vector of length 1. Controls whether parallel computing is applied by specifying the number of cores to be used. Default is 1 (i.e. no parallel computing).
 #' If \code{NULL} (default) then the current working directory is used.
@@ -14,7 +14,8 @@
 #' }
 #' @param cor.method Character string indicating the correlation coefficient to be applied ("pearson", "spearman", or "kendall", see \code{\link[stats]{cor}}).
 #' @param ssmooth Numeric vector of length 1 to determine the length of the sliding window used for a sum smooth for amplitude envelope calculation (used internally by \code{\link[seewave]{env}}).
-#' @param msmooth Numeric vector of length 2 to smooth the amplitude envelope with a mean sliding window for amplitude envelope calculation. The first element is the window length (in number of amplitude values) and the second one the window overlap (used internally by \code{\link[seewave]{env}}). 
+#' @param msmooth Numeric vector of length 2 to smooth the amplitude envelope with a mean sliding window for amplitude envelope calculation. The first element is the window length (in number of amplitude values) and the second one the window overlap (used internally by \code{\link[seewave]{env}}).
+#' @param output Character vector of length 1 to determine if an extended selection table ('est', default) or a data frame ('data.frame').
 #' @param hop.size A numeric vector of length 1 specifying the time window duration (in ms). Default is 11.6 ms, which is equivalent to 512 wl for a 44.1 kHz sampling rate. Ignored if 'wl' is supplied.
 #' @param wl A numeric vector of length 1 specifying the window length of the spectrogram, default 
 #' is NULL. If supplied, 'hop.size' is ignored.
@@ -49,7 +50,7 @@
 #' }
 #last modification on nov-01-2019 (MAS)
 
-envelope_correlation <- function(X, parallel = 1, pb = TRUE, method = 1,  cor.method = "pearson", ssmooth = NULL, msmooth = NULL, hop.size = 11.6, wl = NULL, ovlp = 70){
+envelope_correlation <- function(X, parallel = 1, pb = TRUE, method = 1,  cor.method = "pearson", ssmooth = NULL, msmooth = NULL, output = "est", hop.size = 11.6, wl = NULL, ovlp = 70){
   
   # set pb options 
   on.exit(pbapply::pboptions(type = .Options$pboptions$type), add = TRUE)
@@ -65,6 +66,9 @@ envelope_correlation <- function(X, parallel = 1, pb = TRUE, method = 1,  cor.me
   # hopsize  
   if (!is.numeric(hop.size) | hop.size < 0) stop("'parallel' must be a positive number") 
   
+  #check output
+  if (!any(output %in% c("est", "data.frame"))) stop("'output' must be 'est' or 'data.frame'")  
+  
   # adjust wl based on hope.size
   if (is.null(wl))
     wl <- round(attr(X, "check.results")$sample.rate[1] * hop.size, 0)
@@ -77,7 +81,7 @@ envelope_correlation <- function(X, parallel = 1, pb = TRUE, method = 1,  cor.me
   if (is.null(X$signal.type)) stop("'X' must containe a 'signal.type' column")
   
   # add sound file selec column and names to X (weird column name so it does not overwrite user columns)
-  X <- prep_X_bRlo_int(X, method = method)
+  X <- prep_X_bRlo_int(X, method = method, parallel = parallel, pb = pb)
   
   # set pb options 
   pbapply::pboptions(type = ifelse(as.logical(pb), "timer", "none"))
@@ -159,6 +163,9 @@ envelope_correlation <- function(X, parallel = 1, pb = TRUE, method = 1,  cor.me
   
   # remove temporal columns
   X$TEMP....sgnl <- NULL
+  
+  # return data frame
+  if (output == "data.frame") X <- as.data.frame(X)
   
   return(X)
 }

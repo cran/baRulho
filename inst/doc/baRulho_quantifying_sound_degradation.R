@@ -31,7 +31,7 @@ library(kableExtra)
 # also set a working directory, for this example we will use a temporary directory
 td <- tempdir()
 
-## -----------------------------------------------------------------------------
+## ----load packages, eval=TRUE, echo=TRUE, warning=FALSE, message=FALSE--------
 
 library(warbleR)
 library(ggplot2)
@@ -79,7 +79,7 @@ c("selec.table", "wave")
 #  
 #  kbl <- kable(synth.l$selec_table, align = "c", row.names = F,  format = "html", escape = F)
 #  
-#  kbl <-  kable_styling(kbl, bootstrap_options = "striped", font_size = 14)
+#  kbl <- kable_styling(kbl, bootstrap_options = "striped", font_size = 14)
 #  
 #  kbl
 #  
@@ -116,7 +116,7 @@ c("2020-01-09_17:00:50.wav")
 #  
 #  # plot spectro (saved in working directory)
 #  spectrograms(synth.master.sf, path = td, by.song = "sound.files",
-#             xl = 3, collevels = seq(-60, 0, 5))
+#             xl = 3, collevels = seq(-60, 0, 5), osci = TRUE)
 #  
 
 ## ---- eval = FALSE, echo = TRUE-----------------------------------------------
@@ -143,7 +143,7 @@ c("2020-01-09_17:00:50.wav")
 ## ---- eval=FALSE, echo=TRUE---------------------------------------------------
 #  
 #  spectrograms(master.sf, path = td, by.song = "sound.files",
-#             xl = 3, collevels = seq(-60, 0, 5))
+#             xl = 3, collevels = seq(-60, 0, 5), osci = TRUE)
 #  
 
 ## ---- eval = FALSE------------------------------------------------------------
@@ -153,19 +153,40 @@ c("2020-01-09_17:00:50.wav")
 
 ## ---- eval = FALSE------------------------------------------------------------
 #  
-#  # create a matrix that contains the selection/files to be cross-correlated
-#  comp_mat <- matrix(c(paste(master.sf$sound.files[1], master.sf$selec[1], sep = "-"), "example_master.wav"),nrow = 1)
+#  # read master
+#  exmp.master <- readWave(file.path(td, "example_master.wav"))
 #  
-#  # run cross correlation
-#  xc <- xcorr(master.sf, compare.matrix = comp_mat, wl = 300, ovlp = 30, path = td, output = "list")
+#  # add 1 s silence and create first copy
+#  exmp.test1 <- addsilw(wave = exmp.master, at = "start", d = 1, output = "Wave", f = exmp.master@samp.rate)
 #  
-#  # find peaks
-#  pks <- find_peaks(xc.output = xc, max.peak = TRUE, path = td)
+#  # add 2 s silence and create second copy
+#  exmp.test2 <- addsilw(wave = exmp.master, at = "start", d = 2, output = "Wave", f = exmp.master@samp.rate)
+#  
+#  # make noise
+#  ns <- noisew(f = exmp.master@samp.rate, d = duration(exmp.test2) + 1, output = "Wave")
+#  
+#  # make noise exactly the same length and add noise to 2 examples
+#  exmp.test1@left <- exmp.test1@left + (ns@left[1:length(exmp.test1@left)] * 150)
+#  exmp.test2@left <- exmp.test2@left + (ns@left[1:length(exmp.test2@left)] * 150)
+#  
+#  # normalize both  before saving
+#  exmp.test1 <- normalize(exmp.test1, unit = "16")
+#  exmp.test2 <- normalize(exmp.test2, unit = "16")
+#  
+#  # save simulated re-recorded sound files
+#  writeWave(object = exmp.test1, filename = file.path(td, "example_test1.wav"), extensible = FALSE)
+#  
+#  writeWave(object = exmp.test2, filename = file.path(td, "example_test2.wav"), extensible = FALSE)
+#  
+
+## ---- eval = FALSE------------------------------------------------------------
+#  
+#  found.starts <- search_templates(X = master.sf, template.rows = which(master.sf$orig.sound.file == "start_marker"), test.files = c("example_test1.wav", "example_test2.wav"), path = td); pks
 #  
 
 ## ---- eval = FALSE, echo=FALSE------------------------------------------------
 #  
-#  kbl <- kable(pks, align = "c", row.names = F,  format = "html", escape = F)
+#  kbl <- kable(found.starts, align = "c", row.names = F,  format = "html", escape = F)
 #  
 #  kbl <-  kable_styling(kbl, bootstrap_options = "striped", font_size = 14)
 #  
@@ -174,57 +195,33 @@ c("2020-01-09_17:00:50.wav")
 
 ## ---- eval = FALSE------------------------------------------------------------
 #  
-#  # start on new recording
-#  new.start  <- master.sf$start[!master.sf$orig.sound.file %in%  c("start_marker", "end_marker")] - master.sf$start[1] + pks$start[1]
+#  alg.tests <- align_test_files(X =  master.sf, Y = found.starts, path = td, by.song = TRUE)
 #  
-#  new.start
-
-## ---- echo = FALSE------------------------------------------------------------
-
-new.start <- c(2.298655, 2.771722, 3.234833, 3.709811, 4.142433, 4.568611, 4.999855, 5.430077, 5.861322, 6.306788, 6.751011)
-
-new.start 
 
 ## ---- eval = FALSE------------------------------------------------------------
 #  
-#  # get duration
-#  durs  <- master.sf$end[!master.sf$orig.sound.file %in% c("start_marker", "end_marker")] - master.sf$start[!master.sf$orig.sound.file %in% c("start_marker", "end_marker")]
+#  is_extended_selection_table(alg.est)
 #  
-#  new.end <- new.start + durs
-#  
-#  new.end
+#  alg.est
 
-## ---- echo = FALSE------------------------------------------------------------
+## ---- eval = TRUE, echo = FALSE-----------------------------------------------
 
-new.end <- c(2.471722, 2.934833, 3.409811, 3.842433, 4.268611, 4.699855, 5.130077, 5.561321, 6.006789, 6.451010, 6.896167)
+print(TRUE)
 
-new.end
-
-## ---- eval = FALSE------------------------------------------------------------
-#  
-#  # get subset excluding markers
-#  new.st  <- master.sf[!master.sf$orig.sound.file %in% c("start_marker", "end_marker"), ]
-#  
-#  # fix time columns
-#  new.st$start <- new.start
-#  new.st$end <- new.end
-#  
-#  # add distance column
-#  new.st$distance <- 5
-#  
-#  # make it an extended selection table
-#  new.est <- selection_table(new.st, extended = TRUE, confirm.extended = FALSE, by.song = "sound.files", path = td)
-#  
-#  new.est
 
 ## ---- eval = FALSE,  echo = FALSE---------------------------------------------
 #  
-#  kbl <- kable(new.est, align = "c", row.names = F,  format = "html", escape = F)
+#  kbl <- kable(alg.tests, align = "c", row.names = F,  format = "html", escape = F)
 #  
 #  kbl <-  kable_styling(kbl, bootstrap_options = "striped", font_size = 14)
 #  
 #  kbl <- scroll_box(kbl, width = "800px", height = "300px")
 #  kbl
+#  
+
+## ---- eval = FALSE------------------------------------------------------------
+#  
+#  spectrograms(alg.tests, by.song = "sound.files", xl = 3, collevels = seq(-60, 0, 5), dest.path = td, osci = TRUE)
 #  
 
 ## ---- eval = FALSE------------------------------------------------------------
@@ -496,6 +493,7 @@ is_extended_selection_table(sa)
 #  sa
 
 ## ---- echo = FALSE------------------------------------------------------------
+
 
 kbl <- kable(sa, align = "c", row.names = F,  format = "html", escape = F)
 
