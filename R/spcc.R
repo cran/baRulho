@@ -41,7 +41,7 @@
 #' @author Marcelo Araya-Salas (\email{marceloa27@@gmail.com})
 #' @seealso \code{\link{blur_ratio}}, \code{\link{spcc_align}}, \code{\link[warbleR]{xcorr}}
 #' @references {
-#' Araya-Salas, M. (2020). baRulho: baRulho: quantifying habitat-induced degradation of (animal) acoustic signals in R. R package version 1.0.0
+#' Araya-Salas, M. (2020). baRulho: baRulho: quantifying habitat-induced degradation of (animal) acoustic signals in R. R package version 1.0.2
 #' 
 #' Clark, C.W., Marler, P. & Beeman K. (1987). Quantitative analysis of animal vocal phonology: an application to Swamp Sparrow song. Ethology. 76:101-115. 
 #' }
@@ -71,6 +71,9 @@ spcc <- function(X, parallel = 1, pb = TRUE,  method = 1, cor.method = "pearson"
   if (is.null(wl))
     wl <- round(attr(X, "check.results")$sample.rate[1] * hop.size, 0)
 
+  # make wl even if odd
+  if (!(wl %% 2) == 0) wl <- wl + 1
+  
   # If method is not numeric
   if (!is.character(cor.method)) stop("'cor.method' must be a character vector of length 1")
   

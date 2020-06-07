@@ -1,8 +1,9 @@
 #' Measure attenuation as signal-to-noise ratio 
 #' 
-#' \code{snr} measures attenuation as signal-to-noise ratio of signals referenced in an extended selection table.
-#' @usage snr(X, mar, parallel = 1, pb = TRUE, eq.dur = FALSE,
-#' noise.ref = "adjacent", type = 1, bp = NULL, output = "est", hop.size = 1, wl = NULL)
+#' \code{signal_to_noise_ratio} measures attenuation as signal-to-noise ratio of signals referenced in an extended selection table.
+#' @usage signal_to_noise_ratio(X, mar, parallel = 1, pb = TRUE, eq.dur = FALSE,
+#' noise.ref = "adjacent", type = 1, bp = 'freq.range', 
+#' output = "est", hop.size = 1, wl = NULL)
 #' @param X object of class 'extended_selection_table' created by the function \code{\link[warbleR]{selection_table}} from the warbleR package.
 #' @param mar numeric vector of length 1. Specifies the margins adjacent to
 #'   the start and end points of selection over which to measure ambient noise.
@@ -10,19 +11,19 @@
 #' @param pb Logical argument to control if progress bar is shown. Default is \code{TRUE}.
 #' @param eq.dur Logical. Controls whether the ambient noise segment that is measured has the same duration 
 #' to that of the signal (if \code{TRUE}. Default is \code{FALSE}). If \code{TRUE} then 'mar' and 'noise.ref' arguments are ignored.
-#' @param noise.ref Character vector of length 1 to determined if a measure ambient noise segment to be used for measuring ambient noise. Two options are available: 
+#' @param noise.ref Character vector of length 1 to determined which noise segment must be used for measuring ambient noise. Two options are available: 
 #' \itemize{
-#' \item \code{adjacent}: measure ambient noise right before the signal (using argument 'mar' to define duration of ambient noise segments). If several 'ambient' selections by sound file are supplied, then the root mean square of the amplitude envelope will be averaged across those selections.
-#' \item \code{custom}: measure ambient noise segments referenced in the selection table (labeled as 'ambient' in the 'signal.type' column). Those segments will be used to apply the same ambient noise reference to all signals in a sound file. Therefore, at least one 'ambient' selection for each sound file must be provided.
+#' \item \code{adjacent}: measure ambient noise right before the signal (using argument 'mar' to define duration of ambient noise segments). 
+#' \item \code{custom}: measure ambient noise segments referenced in the selection table (labeled as 'ambient' in the 'signal.type' column). Those segments will be used to apply the same ambient noise reference to all signals in a sound file. Therefore, at least one 'ambient' selection for each sound file must be provided. If several 'ambient' selections by sound file are supplied, then the root mean square of the amplitude envelope will be averaged across those selections.
 #' }
 #' @param type  Numeric vector of length 1. Selects the formula to be used to calculate the signal-to-noise ratio (S = signal
 #' , N = background noise): 
 #' \itemize{
 #' \item \code{1}: ratio of S amplitude envelope root mean square to N amplitude envelope root mean square
-#'  (\code{rms(env(S))/rms(env(N))})
-#' \item \code{2}: ratio of the difference between S amplitude envelope root mean square and N amplitude envelope root mean square to N amplitude envelope root mean square (\code{(rms(env(S)) - rms(env(N)))/rms(env(N))}, as proposed by Dabelsteen et al (1993))
+#'  (\code{rms(env(S))/rms(env(N))}) as described by Darden (2008).
+#' \item \code{2}: ratio of the difference between S amplitude envelope root mean square and N amplitude envelope root mean square to N amplitude envelope root mean square (\code{(rms(env(S)) - rms(env(N)))/rms(env(N))}, as described by Dabelsteen et al (1993).
 #' }
-#' @param bp Numeric vector of length 2 giving the lower and upper limits of a frequency bandpass filter (in kHz). Default is \code{NULL}.
+#' @param bp Numeric vector of length 2 giving the lower and upper limits of a frequency bandpass filter (in kHz). Alternatively, when set to 'freq.range' (default), which will make the function use the 'bottom.freq' and 'top.freq' as the bandpass range.
 #' @param output Character vector of length 1 to determine if an extended selection table ('est', default) or a data frame ('data.frame').
 #' @param hop.size A numeric vector of length 1 specifying the time window duration (in ms). Default is 1 ms, which is equivalent to ~45 wl for a 44.1 kHz sampling rate. Ignored if 'wl' is supplied.
 #' @param wl A numeric vector of length 1 specifying the window length of the spectrogram, default 
@@ -31,36 +32,40 @@
 #' @return Extended selection table similar to input data, but also includes a new column (signal.to.noise.ratio)
 #' with the signal-to-noise ratio values.
 #' @export
-#' @name snr
-#' @details Signal-to-noise ratio (SNR) measures signal amplitude level in relation to ambient noise. A general margin in which ambient noise will be measured must be specified. Alternatively, a selection of ambient noise can be used as reference (see 'noise.ref' argument). When margins overlap with another acoustic signal nearby, SNR will be inaccurate, so margin length should be carefully considered. Any SNR less than or equal to one suggests background noise is equal to or overpowering the acoustic signal. The 'signal.type' column must be used to indicate which signals belong to the same category (e.g. song-types). The function will measure signal-to-noise ratio within the supplied frequency range (e.g. bandpass) of the reference signal ('bottom.freq' and 'top.freq' columns in 'X'). Two methods for calculating signal-to-noise ratio are provided (see 'type' argument).   
+#' @name signal_to_noise_ratio
+#' @details Signal-to-noise ratio (SNR) measures signal amplitude level in relation to ambient noise. A general margin in which ambient noise will be measured must be specified. Alternatively, a selection of ambient noise can be used as reference (see 'noise.ref' argument). When margins overlap with another acoustic signal nearby, SNR will be inaccurate, so margin length should be carefully considered. Any SNR less than or equal to one suggests background noise is equal to or overpowering the acoustic signal. The function will measure signal-to-noise ratio within the supplied frequency range (e.g. bandpass) of the reference signal ('bottom.freq' and 'top.freq' columns in 'X') by default (that is, when \code{bp = 'freq.range'}.   
 #' @examples
 #' {
 #' # load example data
 #' data("playback_est")
 #' 
 #' # using measure ambient noise reference selections 
-#' snr(X = playback_est, mar = 0.05, noise.ref = 'custom')
+#' signal_to_noise_ratio(X = playback_est, mar = 0.05, noise.ref = 'custom')
 #' 
 #' # remove ambient selections
 #' playback_est <- playback_est[playback_est$signal.type != "ambient", ]
+#' 
 #' # using margin for ambient noise of 0.05 and adjacent measure ambient noise reference
-#'snr(X = playback_est, mar = 0.05, noise.ref = 'adjacent')
+#'signal_to_noise_ratio(X = playback_est, mar = 0.05, noise.ref = 'adjacent')
+#'
 #' }
 #' 
 #' @author Marcelo Araya-Salas (\email{marceloa27@@gmail.com})
 #' @seealso \code{\link{excess_attenuation}}
 #' @references {
+#' Araya-Salas, M. (2020). baRulho: baRulho: quantifying habitat-induced degradation of (animal) acoustic signals in R. R package version 1.0.2
+#' 
 #' Dabelsteen, T., Larsen, O. N., & Pedersen, S. B. (1993). Habitat-induced degradation of sound signals: Quantifying the effects of communication sounds and bird location on blur ratio, excess attenuation, and signal-to-noise ratio in blackbird song. The Journal of the Acoustical Society of America, 93(4), 2206.
 #' 
-#' Araya-Salas, M. (2020). baRulho: baRulho: quantifying habitat-induced degradation of (animal) acoustic signals in R. R package version 1.0.0
+#' Darden, SK, Pedersen SB, Larsen ON, & Dabelsteen T. (2008). Sound transmission at ground level in a short-grass prairie habitat and its implications for long-range communication in the swift fox *Vulpes velox*. The Journal of the Acoustical Society of America, 124(2), 758-766.
 #' }
 #last modification on nov-01-2019 (MAS)
 
-snr <- function(X, mar, parallel = 1, pb = TRUE, eq.dur = FALSE,
-                       noise.ref = "adjacent", type = 1, bp = NULL, output = "est", hop.size = 1, 
+signal_to_noise_ratio <- function(X, mar, parallel = 1, pb = TRUE, eq.dur = FALSE,
+                       noise.ref = "adjacent", type = 1, bp = "freq.range", output = "est", hop.size = 1, 
                        wl = NULL){
   
-  
+  #get call argument names
   argus <- names(as.list(base::match.call()))
   
 
@@ -84,6 +89,9 @@ snr <- function(X, mar, parallel = 1, pb = TRUE, eq.dur = FALSE,
   # adjust wl based on hope.size
   if (is.null(wl))
     wl <- round(attr(X, "check.results")$sample.rate[1] * hop.size, 0)
+  
+  # make wl even if odd
+  if (!(wl %% 2) == 0) wl <- wl + 1
   
   # check signal.type column 
   if (is.null(X$signal.type)) stop("'X' must containe a 'signal.type' column")
@@ -115,6 +123,10 @@ snr <- function(X, mar, parallel = 1, pb = TRUE, eq.dur = FALSE,
       
       # add band-pass frequency filter
       if (!is.null(bp)) {
+
+        # filter to bottom and top freq range
+        if (bp == "freq.range") 
+          bp <- c(X$bottom.freq[y], X$top.freq[y])
         
         signal <- seewave::ffilter(signal, f = signal@samp.rate, from = bp[1] * 1000, ovlp = 0,
                               to = bp[2] * 1000, bandpass = TRUE, wl = wl, 
@@ -129,9 +141,8 @@ snr <- function(X, mar, parallel = 1, pb = TRUE, eq.dur = FALSE,
     
     if (noise.ref == "adjacent"){
       
-      
       # Read sound files to get sample rate and length
-      r <- warbleR::read_wave(X = X, index = y, header = TRUE)
+      r <- warbleR::read_wave(X = X, index = y, from = 0, to = Inf, header = TRUE)
       
       # read sample rate
       f <- r$sample.rate
@@ -158,6 +169,18 @@ snr <- function(X, mar, parallel = 1, pb = TRUE, eq.dur = FALSE,
       
       # read clip with signal  
       signal <- warbleR::read_wave(X = X, index = y)
+      
+      # add band-pass frequency filter
+      if (!is.null(bp)) {
+        
+        # filter to bottom and top freq range
+        if (bp == "freq.range") 
+          bp <- c(X$bottom.freq[y], X$top.freq[y])
+        
+        signal <- seewave::ffilter(signal, f = signal@samp.rate, from = bp[1] * 1000, ovlp = 0,
+                                   to = bp[2] * 1000, bandpass = TRUE, wl = wl, 
+                                   output = "Wave")
+      }
       
       # get RMS for signal
       sig.env <- seewave::env(signal, f = signal@samp.rate, envt = "abs", plot = FALSE)
@@ -194,13 +217,9 @@ snr <- function(X, mar, parallel = 1, pb = TRUE, eq.dur = FALSE,
       }
     
     # Calculate signal-to-noise ratio
-   if (type == 1)
-    snr <- sig_RMS / bg_RMS
+    snr <- - 20 * log10(sig_RMS / bg_RMS)
    
-   if (type == 2)
-     snr <- (sig_RMS - bg_RMS) / bg_RMS
-   
-    return(20*log10(snr))  
+    return(snr)  
     } else return(NA) # return NA if current row is noise
   })
   

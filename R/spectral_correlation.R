@@ -1,7 +1,6 @@
 #' Measure frequency spectral correlation
 #' 
 #' \code{spectral_correlation} measures frequency spectrum correlation of signals referenced in an extended selection table.
-#' \code{spectral_correlation} measures frequency spectrum correlation of signals referenced in an extended selection table.
 #' @usage spectral_correlation(X, parallel = 1, pb = TRUE, method = 1, 
 #' cor.method = "pearson", output = "est", 
 #' hop.size = 11.6, wl = NULL, ovlp = 70)
@@ -47,7 +46,7 @@
 #' @author Marcelo Araya-Salas (\email{marceloa27@@gmail.com})
 #' @seealso \code{\link{envelope_correlation}}, \code{\link{spectral_blur_ratio}} 
 #' @references {
-#' Araya-Salas, M. (2020). baRulho: baRulho: quantifying habitat-induced degradation of (animal) acoustic signals in R. R package version 1.0.0
+#' Araya-Salas, M. (2020). baRulho: baRulho: quantifying habitat-induced degradation of (animal) acoustic signals in R. R package version 1.0.2
 #' 
 #' Apol, C.A., Sturdy, C.B. & Proppe, D.S. (2017). Seasonal variability in habitat structure may have shaped acoustic signals and repertoires in the black-capped and boreal chickadees. Evol Ecol. 32:57-74.
 #' }
@@ -75,6 +74,9 @@ spectral_correlation <- function(X, parallel = 1, pb = TRUE, method = 1, cor.met
   # adjust wl based on hope.size
   if (is.null(wl))
     wl <- round(attr(X, "check.results")$sample.rate[1] * hop.size, 0)
+  
+  # make wl even if odd
+  if (!(wl %% 2) == 0) wl <- wl + 1
   
   # If method is not numeric
   if (!is.character(cor.method)) stop("'cor.method' must be a character vector of length 1") 

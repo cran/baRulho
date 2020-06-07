@@ -31,6 +31,7 @@ library(kableExtra)
 # also set a working directory, for this example we will use a temporary directory
 td <- tempdir()
 
+
 ## ----load packages, eval=TRUE, echo=TRUE, warning=FALSE, message=FALSE--------
 
 library(warbleR)
@@ -342,7 +343,7 @@ envs$distance <- as.factor(envs$distance)
 ggplot(envs, aes(x= time, y = amp, col = distance)) +
     geom_line() +
     facet_wrap(~ signal.type) + 
-    scale_color_manual(values = viridis(4)) +
+    scale_color_viridis_d(alpha = 0.7) +  
     labs(x = "Time (s)", y = "Amplitude (PMF)") +
     theme_classic()
 
@@ -355,7 +356,7 @@ envs$distance <- as.factor(envs$distance)
 ggplot(envs, aes(x= time, y = amp, col = distance)) +
     geom_line() +
     facet_wrap(~ signal.type) + 
-    scale_color_manual(values = viridis(4)) +
+    scale_color_viridis_d(alpha = 0.7) +  
     labs(x = "Time (s)", y = "Amplitude (PMF)") +
     theme_classic()
 
@@ -405,12 +406,12 @@ spctr <- sbr$spectra
 spctr$distance <- as.factor(spctr$distance)
 
 ggplot(spctr, aes(y = amp, x = freq, col = distance)) +
-geom_line() +
-facet_wrap(~ signal.type) + 
-scale_color_manual(values = viridis(4)) +
-labs(x = "Frequency (kHz)", y = "Amplitude (PMF)") +
-coord_flip() +
-theme_classic()
+  geom_line() +
+  facet_wrap(~ signal.type) + 
+  scale_color_viridis_d(alpha = 0.7) +  
+  labs(x = "Frequency (kHz)", y = "Amplitude (PMF)") +
+  coord_flip() +
+  theme_classic()
 
 
 ## -----------------------------------------------------------------------------
@@ -419,12 +420,12 @@ theme_classic()
 spctr <- spctr[spctr$freq > min(playback_est$bottom.freq) & spctr$freq < max(playback_est$top.freq), ]
 
 ggplot(spctr, aes(y = amp, x = freq, col = distance)) +
-geom_line() +
-facet_wrap(~ signal.type) + 
-scale_color_manual(values = viridis(4)) +
-labs(x = "Frequency (kHz)", y = "Amplitude (PMF)") +
-coord_flip() +
-theme_classic()
+  geom_line() +
+  facet_wrap(~ signal.type) + 
+  scale_color_viridis_d(alpha = 0.7) +  
+  labs(x = "Frequency (kHz)", y = "Amplitude (PMF)") +
+  coord_flip() +
+  theme_classic()
 
 
 ## ---- eval = TRUE-------------------------------------------------------------
@@ -481,8 +482,8 @@ kbl
 
 ## ---- eval = TRUE-------------------------------------------------------------
 
-# run blur ratio
-sa <- snr(playback_est,  pb = FALSE, noise.ref = "custom")
+# run signal to noise ratio
+sa <- signal_to_noise_ratio(playback_est,  pb = FALSE, noise.ref = "custom")
 
 # check output class
 is_extended_selection_table(sa)
@@ -496,6 +497,36 @@ is_extended_selection_table(sa)
 
 
 kbl <- kable(sa, align = "c", row.names = F,  format = "html", escape = F)
+
+kbl <-  column_spec(kbl, 9, background = "#ccebff", bold = TRUE)
+
+kbl <-  kable_styling(kbl, bootstrap_options = "striped", font_size = 10)
+
+kbl <- scroll_box(kbl, height = "400px")
+
+kbl
+
+
+## ---- eval = TRUE-------------------------------------------------------------
+
+# run tail to signal ratio
+tsr <- tail_to_signal_ratio(playback_est,  pb = FALSE, 
+                           type = 1, mar = 0.05)
+
+# check output class
+is_extended_selection_table(tsr)
+
+
+## ---- eval = FALSE------------------------------------------------------------
+#  # print output
+#  
+#  tsr
+#  
+
+## ---- echo = FALSE------------------------------------------------------------
+
+
+kbl <- kable(tsr, align = "c", row.names = F,  format = "html", escape = F)
 
 kbl <-  column_spec(kbl, 9, background = "#ccebff", bold = TRUE)
 
@@ -530,6 +561,74 @@ kbl <-  kable_styling(kbl, bootstrap_options = "striped", font_size = 10)
 kbl <- scroll_box(kbl, height = "400px")
 
 kbl
+
+
+## ---- eval = TRUE-------------------------------------------------------------
+
+# run noise profile
+np <- noise_profile(X = playback_est[playback_est$distance > 5, ], mar = 0.05, pb = FALSE)
+
+str(np)
+
+## ---- eval = FALSE------------------------------------------------------------
+#  # print output
+#  head(np, 20)
+#  
+
+## ---- echo = FALSE------------------------------------------------------------
+
+kbl <- kable(np[1:20, ], align = "c", row.names = F,  format = "html", escape = F)
+
+kbl <-  column_spec(kbl, 2:3, background = "#ccebff", bold = TRUE)
+
+kbl <-  kable_styling(kbl, bootstrap_options = "striped", font_size = 10)
+
+kbl <- scroll_box(kbl, height = "400px")
+
+kbl
+
+
+## ---- eval = TRUE-------------------------------------------------------------
+
+ggplot(np, aes(y = amp, x = freq, col = sound.files)) +
+  geom_line(size = 1.4) +
+   scale_color_viridis_d(begin = 0.2, end = 0.8, alpha = 0.5) +  
+ labs(x = "Frequency (kHz)", y = "Amplitude (dBA)") +
+  coord_flip() +
+  theme_classic()
+
+
+## ---- eval = TRUE, warning = FALSE--------------------------------------------
+
+np <- noise_profile(X = playback_est[playback_est$distance > 5, ], 
+      mar = 0.1, pb = FALSE, averaged = FALSE)
+
+# make a column containing sound file and selection
+np$sf.sl <- paste(np$sound.files, np$selec)
+
+ggplot(np, aes(y = amp, x = freq, col = sound.files, group = sf.sl)) +
+  geom_line(size = 1.4) +
+    scale_color_viridis_d(begin = 0.2, end = 0.8, alpha = 0.5) +  
+ labs(x = "Frequency (kHz)", y = "Amplitude (dBA)") +
+  coord_flip() +
+  theme_classic()
+
+
+## ---- eval = TRUE-------------------------------------------------------------
+
+np <- noise_profile(X = playback_est[playback_est$distance > 5, ], 
+      mar = 0.05, pb = FALSE, bp = c(0, 10), 
+      averaged = FALSE, hop.size = 3)
+
+# make a column containing sound file and selection
+np$sf.sl <- paste(np$sound.files, np$selec)
+
+ggplot(np, aes(y = amp, x = freq, col = sound.files, group = sf.sl)) +
+  geom_line(size = 1.4) +
+  scale_color_viridis_d(begin = 0.2, end = 0.8, alpha = 0.5) +  
+  labs(x = "Frequency (kHz)", y = "Amplitude (dBA)") +
+  coord_flip() +
+  theme_classic()
 
 
 ## ----session info, echo=F-----------------------------------------------------

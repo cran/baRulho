@@ -29,7 +29,7 @@
 #' @author Marcelo Araya-Salas (\email{marceloa27@@gmail.com})
 #' @seealso \code{\link{blur_ratio}}, \code{\link[warbleR]{xcorr}}
 #' @references {
-#' Araya-Salas, M. (2020). baRulho: baRulho: quantifying habitat-induced degradation of (animal) acoustic signals in R. R package version 1.0.0
+#' Araya-Salas, M. (2020). baRulho: baRulho: quantifying habitat-induced degradation of (animal) acoustic signals in R. R package version 1.0.2
 #' 
 #' Clark, C.W., Marler, P. & Beeman K. (1987). Quantitative analysis of animal vocal phonology: an application to Swamp Sparrow song. Ethology. 76:101-115. 
 #' }
@@ -63,6 +63,9 @@ spcc_align <- function(X, parallel = 1, pb = TRUE, hop.size = 11.6, wl = NULL, o
   # adjust wl based on hope.size
   if (is.null(wl))
     wl <- round(attr(X, "check.results")$sample.rate[1] * hop.size, 0)
+  
+  # make wl even if odd
+  if (!(wl %% 2) == 0) wl <- wl + 1
   
   # check signal.type column 
   if (is.null(X$signal.type)) stop("'X' must containe a 'signal.type' column")

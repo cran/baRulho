@@ -51,7 +51,7 @@
 #' @references {
 #' Dabelsteen, T., Larsen, O. N., & Pedersen, S. B. (1993). Habitat-induced degradation of sound signals: Quantifying the effects of communication sounds and bird location on blur ratio, excess attenuation, and signal-to-noise ratio in blackbird song. The Journal of the Acoustical Society of America, 93(4), 2206.
 #' 
-#' Araya-Salas, M. (2020). baRulho: baRulho: quantifying habitat-induced degradation of (animal) acoustic signals in R. R package version 1.0.0
+#' Araya-Salas, M. (2020). baRulho: baRulho: quantifying habitat-induced degradation of (animal) acoustic signals in R. R package version 1.0.2
 #' }
 #last modification on dec-26-2019 (MAS)
 
@@ -78,6 +78,9 @@ blur_ratio <- function(X, parallel = 1, pb = TRUE, method = 1,
   # adjust wl based on hope.size
   if (is.null(wl))
     wl <- round(attr(X, "check.results")$sample.rate[1] * hop.size, 0)
+  
+  # make wl even if odd
+  if (!(wl %% 2) == 0) wl <- wl + 1
   
   # If parallel is not numeric
   if (!is.numeric(parallel)) stop("'parallel' must be a numeric vector of length 1") 
