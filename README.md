@@ -1,9 +1,9 @@
 # baRulho
 
-[![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version/baRulho)](https://cran.r-project.org/package=baRulho)
-[![CRAN RStudio mirror downloads](http://cranlogs.r-pkg.org/badges/baRulho)](http://www.r-pkg.org/pkg/baRulho)
+[![CRAN\_Status\_Badge](https://www.r-pkg.org/badges/version/baRulho)](https://cran.r-project.org/package=baRulho)
+[![CRAN RStudio mirror downloads](https://cranlogs.r-pkg.org/badges/baRulho)](https://www.r-pkg.org:443/pkg/baRulho)
 [![Total downloads](https://cranlogs.r-pkg.org/badges/grand-total/baRulho?color=blue)](https://r-pkg.org/pkg/baRulho)
-[![lifecycle](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://www.tidyverse.org/lifecycle/#experimental)
+[![lifecycle](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html)
 
 `baRulho` is intended to facilitate acoustic analysis of (animal) sound transmission experiments, which typically aim to quantify changes in signal structure when transmitted in a given habitat by broadcasting and re-recording animal sounds at increasing distances. The package offers a workflow with functions to prepare the data set for analysis as well as to calculate and visualize several degradation metrics, including blur ratio, signal-to-noise ratio, excess attenuation and envelope correlation among others (Dabelsteen et al 1993).
 
@@ -19,7 +19,7 @@ library(baRulho)
 
 ```
 
-To install the latest developmental version from [github](http://github.com/) you will need the R package [devtools](https://cran.r-project.org/package=devtools):
+To install the latest developmental version from [github](https://github.com/) you will need the R package [devtools](https://cran.r-project.org/package=devtools):
 
 ```r
 
@@ -39,7 +39,7 @@ Araya-Salas, M. (2020), *baRulho: quantifying habitat-induced degradation of (an
 
 1. Dabelsteen, T., Larsen, O. N., & Pedersen, S. B. (1993). *Habitat-induced degradation of sound signals: Quantifying the effects of communication sounds and bird location on blur ratio, excess attenuation, and signal-to-noise ratio in blackbird song*. The Journal of the Acoustical Society of America, 93(4), 2206.
 
-1. Marten, K., & Marler, P. (1977). *Sound transmission and its significance for animal vocalization. Behavioral* Ecology and Sociobiology, 2(3), 271-290.
+1. Marten, K., & Marler, P. (1977). *Sound transmission and its significance for animal vocalization*. Behavioral Ecology and Sociobiology, 2(3), 271-290.
 
 1. Morton, E. S. (1975). *Ecological sources of selection on avian sounds*. The American Naturalist, 109(965), 17-34.
 

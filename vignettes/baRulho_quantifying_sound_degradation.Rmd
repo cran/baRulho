@@ -3,7 +3,7 @@ title: <center><font size="7"><b>baRulho</b></font></center>
 subtitle: <center><font size="5">Quantifying (animal) acoustic signal transmission and degradation</font></center>
 pagetitle: baRulho quantifying sound degradation
 author: 
-- <center><a href="http://marceloarayasalas.weebly.com/">Marcelo Araya-Salas, PhD</a></center>
+- <center><a href="https://marceloarayasalas.weebly.com">Marcelo Araya-Salas, PhD</a></center>
 date:  <center>"`r Sys.Date()`"</center>
 output:
   rmarkdown::html_document:
@@ -35,6 +35,13 @@ editor_options:
 
 &nbsp; 
 
+```{r eval= TRUE, echo=FALSE}
+
+library(knitr)
+opts_chunk$set(tidy = TRUE, fig.align = "center")
+
+```
+
 
 The [baRulho](https://cran.r-project.org/package=baRulho) package is intended to facilitate acoustic analysis of (animal) sound transmission experiments. Such studies typically aim to quantify changes in signal structure when transmitted in a given habitat by broadcasting and re-recording animal sounds at increasing distances. We will refer to these changes in signal structure 'degradation' for the sake of simplicity. The package offers a workflow with functions to prepare the data set for analysis as well as to calculate and visualize several degradation metrics. [baRulho](https://marce10.github.io/baRulho/) builds upon functions and data formats from the [warbleR](https://cran.r-project.org/package=warbleR) and [seewave](https://cran.r-project.org/package=seewave) packages, so some experience with these packages is advised.
 
@@ -57,7 +64,7 @@ library(baRulho)
 
 ```
 
-To install the latest developmental version from [github](http://github.com/) you will need the R package [devtools](https://cran.r-project.org/package=devtools):
+To install the latest developmental version from [github](https://github.com/) you will need the R package [devtools](https://cran.r-project.org/package=devtools):
 
 ```{r, eval = FALSE}
 
@@ -364,7 +371,7 @@ spectrograms(master.sf, path = td, by.song = "sound.files",
 
  <img src="example_master.wav.jpeg" alt="spectrogram of master file">
 
-Note that the output could also be exported to [Raven sound analysis software](http://ravensoundsoftware.com/software/raven-pro) ([Cornell Lab of Ornithology](http://www.birds.cornell.edu)) for visualization or further manipulation using the function `exp_raven()` from the [Rraven](https://cran.r-project.org/package=Rraven) package. `exp_raven()` exports selections in the R environment to a '.txt' file that can be read in Raven:
+Note that the output could also be exported to [Raven sound analysis software](https://ravensoundsoftware.com/software/raven-pro) ([Cornell Lab of Ornithology](https://www.birds.cornell.edu/home)) for visualization or further manipulation using the function `exp_raven()` from the [Rraven](https://cran.r-project.org/package=Rraven) package. `exp_raven()` exports selections in the R environment to a '.txt' file that can be read in Raven:
  
 
 ```{r, eval = FALSE}
@@ -803,7 +810,7 @@ When this process is done manually (or when broadcasting devices add some short 
 
 Misalignment can be fixed with the function `spcc_align()`. This function uses spectrogram cross-correlation to sync the position in time of signals with regard to a reference signal. `spcc_align()` takes the signal recorded at the closest distance to the source as the reference signal. The function calls [warbleR](https://cran.r-project.org/package=warbleR)'s `xcorr()` and `find_peaks()` (just as we did above) internally to align signals using cross-correlation. 
 
-[baRulho](https://marce10.github.io/baRulho/) comes with an example data set called  `playback_est_unaligned`, which contains signals in which the time position of signals is slightly unaligned. We can use this data to show how the function `spcc_align()`: 
+[baRulho](https://marce10.github.io/baRulho/) comes with an example data set called  `playback_est_unaligned`, which contains signals in which the time position of signals is slightly unaligned. We can use this data to show how the function `spcc_align()` works: 
 
 ```{r, eval = FALSE}
  data("playback_est_unaligned")
@@ -1228,7 +1235,7 @@ kbl
 
 Note that this function does not compare signals to references, so no reference column is added.
 
-### Tail-to=signal ratio
+### Tail-to-signal ratio
 
 Tail-to-signal ratio (TSR) is used to quantify reverberations. Specifically TSR measures the ratio of energy in the reverberation tail  (the time segment right after the signal) to energy in the signal. A general margin in which reverberation tail will be measured must be specified. The function will measure TSR within the supplied frequency range (e.g. bandpass) of the reference signal ('bottom.freq' and 'top.freq' columns in 'X'). Two methods for calculating reverberations are provided (see 'type' argument). `Type 1` is based on the original description of TSR in Dabelsteen et al. (1993) while `type 2` is better referred to as "tail-to-noise ratio", given that it compares the amplitude of tails to those of ambient noise. For both types higher values represent more reverberations. TSR can be measured as follows:
 
@@ -1412,6 +1419,8 @@ Araya-Salas, M. (2020), *baRulho: quantifying habitat-induced degradation of (an
 
 1. Araya-Salas, M. (2017). *Rraven: connecting R and Raven bioacoustic software*. R package version 1.0.0.
 
+1.  Araya-Salas, M. (2020), *baRulho: quantifying habitat-induced degradation of (animal) acoustic signals in R*. R package version 1.0.0
+  
 1. Araya-Salas M, Smith-Vidaurre G (2017) *warbleR: An R package to streamline analysis of animal acoustic signals*. Methods Ecol Evol 8:184–191.
 
 1. Dabelsteen, T., Larsen, O. N., & Pedersen, S. B. (1993). *Habitat-induced degradation of sound signals: Quantifying the effects of communication sounds and bird location on blur ratio, excess attenuation, and signal-to-noise ratio in blackbird song*. The Journal of the Acoustical Society of America, 93(4), 2206.

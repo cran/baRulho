@@ -1,3 +1,9 @@
+## ----eval= TRUE, echo=FALSE---------------------------------------------------
+
+library(knitr)
+opts_chunk$set(tidy = TRUE, fig.align = "center")
+
+
 ## ---- eval = FALSE------------------------------------------------------------
 #  
 #  # From CRAN would be
