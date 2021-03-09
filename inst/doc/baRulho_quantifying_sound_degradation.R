@@ -437,6 +437,32 @@ ggplot(spctr, aes(y = amp, x = freq, col = distance)) +
 ## ---- eval = TRUE-------------------------------------------------------------
 
 # run  envelope correlation
+ea <- excess_attenuation(playback_est, method = 1, pb = FALSE)
+
+# check output class
+is_extended_selection_table(ea)
+
+
+## ---- eval = FALSE------------------------------------------------------------
+#  # print output
+#  ea
+
+## ---- echo = FALSE------------------------------------------------------------
+
+kbl <- kable(ea, align = "c", row.names = F,  format = "html", escape = F)
+
+kbl <-  column_spec(kbl, 9:10, background = "#ccebff", bold = TRUE)
+
+kbl <-  kable_styling(kbl, bootstrap_options = "striped", font_size = 10)
+
+kbl <- scroll_box(kbl, height = "400px")
+
+kbl
+
+
+## ---- eval = TRUE-------------------------------------------------------------
+
+# run  envelope correlation
 ec <- envelope_correlation(playback_est, method = 1, pb = FALSE)
 
 # check output class
