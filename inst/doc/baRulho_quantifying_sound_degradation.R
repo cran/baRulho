@@ -572,7 +572,7 @@ kbl
 ## ---- eval = TRUE-------------------------------------------------------------
 
 # run spcc
-spd <- spcc(X = playback_est, method = 1, pb = FALSE)
+spd <- spcc(X = playback_est, method = 1, pb = FALSE, wl = 512)
 
 # check output class
 is_extended_selection_table(spd)
