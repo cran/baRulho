@@ -4,37 +4,49 @@
 \alias{noise_profile}
 \title{Measure full spectrum sound noise profiles}
 \usage{
-noise_profile(X = NULL, files = NULL, mar = NULL, 
-noise.ref = "adjacent", parallel = 1, pb = TRUE, path = NULL,
-bp = NULL, hop.size = 1, wl = NULL, PSD = FALSE, norm = TRUE, dB = "A", averaged = TRUE)
+noise_profile(
+  X = NULL,
+  files = NULL,
+  mar = NULL,
+  noise.ref = c("adjacent", "custom"),
+  cores = getOption("mc.cores", 1),
+  pb = getOption("pb", TRUE),
+  path = getOption("sound.files.path", "."),
+  bp = NULL,
+  hop.size = getOption("hop.size", 1),
+  wl = getOption("wl", NULL),
+  PSD = FALSE,
+  norm = TRUE,
+  dB = c("A", "B", "C", "D", "ITU", "max0"),
+  averaged = TRUE
+)
 }
 \arguments{
-\item{X}{object of class 'extended_selection_table' created by the function \code{\link[warbleR]{selection_table}} from the warbleR package. Default is \code{NULL}.}
+\item{X}{Object of class 'data.frame', 'selection_table' or 'extended_selection_table' (the last 2 classes are created by the function \code{\link[warbleR]{selection_table}} from the warbleR package) with the reference to the test sounds . Must contain the following columns: 1) "sound.files": name of the .wav files, 2) "selec": unique selection identifier (within a sound file), 3) "start": start time and 4) "end": end time of selections, 5)  "bottom.freq": low frequency for bandpass, 6) "top.freq": high frequency for bandpass and 7) "sound.id": ID of sounds used to identify counterparts across distances (needed for "custom" noise reference, see "noise.ref" argument). Default is \code{NULL}.}
 
 \item{files}{Character vector with names of wave files to be analyzed. Files must be found in 'path' supplied (or in the working directory if 'path' is not supplied). Default is \code{NULL}.}
 
 \item{mar}{numeric vector of length 1. Specifies the margins adjacent to
 the start and end points of selection over which to measure ambient noise. Required if 'X' is supplied and ignored if not supplied. Default is \code{NULL}.}
 
-\item{noise.ref}{Character vector of length 1 to determined which noise segment must be used for measuring ambient noise. Ignored if 'X' is not supplied. Two options are available: 
+\item{noise.ref}{Character vector of length 1 to determined which noise segment must be used for measuring ambient noise. Ignored if 'X' is not supplied. Two options are available:
 \itemize{
-\item \code{adjacent}: measure ambient noise right before the signal (using argument 'mar' to define duration of ambient noise segments). 
-\item \code{custom}: measure ambient noise segments referenced in the selection table (labeled as 'ambient' in the 'signal.type' column).
+\item \code{adjacent}: measure ambient noise right before the sound (using argument 'mar' to define duration of ambient noise segments).
+\item \code{custom}: measure ambient noise segments referenced in the selection table (labeled as 'ambient' in the 'sound.id' column).
 }}
 
-\item{parallel}{Numeric vector of length 1. Controls whether parallel computing is applied by specifying the number of cores to be used. Default is 1 (i.e. no parallel computing).}
+\item{cores}{Numeric vector of length 1. Controls whether parallel computing is applied by specifying the number of cores to be used. Default is 1 (i.e. no parallel computing).}
 
 \item{pb}{Logical argument to control if progress bar is shown. Default is \code{TRUE}.}
 
-\item{path}{Character string containing the directory path where the sound files are located.
-If \code{NULL} (default) then the current working directory is used.}
+\item{path}{Character string containing the directory path where the sound files are found. Only needed when 'X' is not an extended selection table. If not supplied the current working directory is used.}
 
 \item{bp}{Numeric vector of length 2 giving the lower and upper limits of a frequency bandpass filter (in kHz). Default is \code{NULL}.}
 
 \item{hop.size}{A numeric vector of length 1 specifying the time window duration (in ms). Default is 1 ms, which is equivalent to ~45 wl for a 44.1 kHz sampling rate. Ignored if 'wl' is supplied.}
 
-\item{wl}{A numeric vector of length 1 specifying the window length of the spectrogram, default 
-is NULL. Ignored if \code{bp = NULL}. If supplied, 'hop.size' is ignored. 
+\item{wl}{A numeric vector of length 1 specifying the window length of the spectrogram, default
+is NULL. Ignored if \code{bp = NULL}. If supplied, 'hop.size' is ignored.
 Note that lower values will increase time resolution, which is more important for amplitude ratio calculations.}
 
 \item{PSD}{Logical to control whether the Probability Mass Function (the probability distribution of frequencies). See \code{\link[seewave]{meanspec}}. Default is \code{FALSE}.}
@@ -46,38 +58,42 @@ Note that lower values will increase time resolution, which is more important fo
 \item{averaged}{Logical to control if frequency spectra are averaged within a sound file. Default is \code{TRUE}.}
 }
 \value{
-A list containing the the frequency spectra for each sound file or wave object (if 'X' is supplied).
+A data frame containing the frequency spectra for each sound file or wave object (if 'X' is supplied and is of class 'extended.selection.table').
 }
 \description{
 \code{noise_profile} Measure full spectrum sound pressure levels (i.e. noise profiles) in sound files or extended selection tables.
 }
 \details{
-The function `noise_profile()` allows to estimate full spectrum sound pressure levels (i.e. noise profiles) of ambient noise. This can be done on extended selection tables (using the segments containing no signal) or over complete sound files in the working directory (or path supplied). The function uses \code{\link[seewave]{meanspec}} internally to calculate frequency spectra.
+The function estimates full spectrum sound pressure levels (i.e. noise profiles) of ambient noise. This can be done on data frames/(extended) selection tables (using the segments containing no target sound or the 'ambient' sound id) or over complete sound files in the working directory (or path supplied). The function uses \code{\link[seewave]{meanspec}} internally to calculate frequency spectra.
 }
 \examples{
 {
-# load example data
-data("playback_est")
+  # load example data
+  data("test_sounds_est")
 
-# custom noise reference
-noise_profile(X = playback_est, mar = 0.01, pb = FALSE, noise.ref = "custom")
+  # measure on custom noise reference
+  noise_profile(X = test_sounds_est, mar = 0.01, pb = FALSE, noise.ref = "custom")
 
-# remove noise selections
-pe <- playback_est[playback_est$signal.type != "ambient", ]
- 
- noise_profile(X = pe, mar = 0.01, pb = FALSE, noise.ref = "adjacent")
+  # remove noise selections so noise is measured right before the signals
+  pe <- test_sounds_est[test_sounds_est$sound.id != "ambient", ]
+
+  noise_profile(X = pe, mar = 0.01, pb = FALSE, noise.ref = "adjacent")
 }
-
 }
 \references{
 {
-Araya-Salas, M. (2020). baRulho: baRulho: quantifying habitat-induced degradation of (animal) acoustic signals in R. R package version 1.0.2.
+Araya-Salas M., E. Grabarczyk, M. Quiroz-Oliva, A. Garcia-Rodriguez, A. Rico-Guevara. (2023), baRulho: an R package to quantify degradation in animal acoustic signals .bioRxiv 2023.11.22.568305..
 
 }
 }
 \seealso{
 \code{\link{excess_attenuation}}
+
+Other miscellaneous: 
+\code{\link{add_noise}()},
+\code{\link{attenuation}()}
 }
 \author{
 Marcelo Araya-Salas (\email{marcelo.araya@ucr.ac.cr})
 }
+\concept{miscellaneous}
