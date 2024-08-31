@@ -18,7 +18,7 @@
 #' @param wl A numeric vector of length 1 specifying the window length of the spectrogram, default
 #' is NULL. Ignored if \code{bp = NULL}. If supplied, 'hop.size' is ignored. Note that lower values will increase time resolution, which is more important for amplitude ratios calculations.
 #' @param ovlp Numeric vector of length 1 specifying the percentage of overlap between two
-#'   consecutive windows, as in \code{\link[seewave]{spectro}}. Default is 0. Only used for bandpass filtering.
+#'   consecutive windows, as in \code{\link[seewave]{spectro}}. Default is 0. Only used for bandpass filtering. Can be set globally for the current R session via the "ovlp" option (see \code{\link[base]{options}}).
 #' @return Object 'X' with an additional column, 'signal.to.noise.ratio',
 #' with the signal-to-noise ratio values (in dB).
 #' @export
@@ -41,7 +41,7 @@
 #' @references {
 #' Araya-Salas M., E. Grabarczyk, M. Quiroz-Oliva, A. Garcia-Rodriguez, A. Rico-Guevara. (2023), baRulho: an R package to quantify degradation in animal acoustic signals .bioRxiv 2023.11.22.568305.
 #'
-#' Dabelsteen, T., Larsen, O. N., & Pedersen, S. B. (1993). Habitat-induced degradation of sound signals: Quantifying the effects of communication sounds and bird location on blur ratio, excess attenuation, and signal-to-noise ratio in blackbird song. The Journal of the Acoustical Society of America, 93(4), 2206.
+#' Holland J, Dabelsteen T, Pedersen SB, Paris AL (2001) Potential ranging cues contained within the energetic pauses of transmitted wren song. Bioacoustics 12(1):3-20.
 #'
 #' Darden, SK, Pedersen SB, Larsen ON, & Dabelsteen T. (2008). Sound transmission at ground level in a short-grass prairie habitat and its implications for long-range communication in the swift fox *Vulpes velox*. The Journal of the Acoustical Society of America, 124(2), 758-766.
 #' }
@@ -126,17 +126,19 @@ signal_to_noise_ratio <-
     # set clusters for windows OS
     if (Sys.info()[1] == "Windows" & cores > 1) {
       cl <-
-        parallel::makePSOCKcluster(getOption("cl.cores", cores))
+        parallel::makePSOCKcluster(cores)
     } else {
       cl <- cores
     }
     
     # calculate all RMS of envelopes with a apply function
     rms_list <-
-      warbleR:::pblapply_wrblr_int(
+      warbleR:::.pblapply(
         X = seq_len(nrow(X)),
         pbar = pb,
         cl = cl,
+        message = "computing signal-to-noise ratio",
+        total = 1,
         FUN = .rms,
         Y = X,
         mar = mar,

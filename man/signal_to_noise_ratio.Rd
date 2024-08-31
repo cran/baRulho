@@ -25,9 +25,9 @@ signal_to_noise_ratio(
 \item{mar}{numeric vector of length 1. Specifies the margins adjacent to
 the start point of the annotation over which to measure ambient noise.}
 
-\item{cores}{Numeric vector of length 1. Controls whether parallel computing is applied by specifying the number of cores to be used. Default is 1 (i.e. no parallel computing).}
+\item{cores}{Numeric vector of length 1. Controls whether parallel computing is applied by specifying the number of cores to be used. Default is 1 (i.e. no parallel computing). Can be set globally for the current R session via the "mc.cores" option (see \code{\link[base]{options}}).}
 
-\item{pb}{Logical argument to control if progress bar is shown. Default is \code{TRUE}.}
+\item{pb}{Logical argument to control if progress bar is shown. Default is \code{TRUE}.  Can be set globally for the current R session via the "pb" option (see \code{\link[base]{options}}).}
 
 \item{eq.dur}{Logical. Controls whether the ambient noise segment that is measured has the same duration
 to that of the sound (if \code{TRUE}. Default is \code{FALSE}). If \code{TRUE} then 'mar' and 'noise.ref' arguments are ignored.}
@@ -54,9 +54,9 @@ to that of the sound (if \code{TRUE}. Default is \code{FALSE}). If \code{TRUE} t
 is NULL. Ignored if \code{bp = NULL}. If supplied, 'hop.size' is ignored. Note that lower values will increase time resolution, which is more important for amplitude ratios calculations.}
 
 \item{ovlp}{Numeric vector of length 1 specifying the percentage of overlap between two
-consecutive windows, as in \code{\link[seewave]{spectro}}. Default is 0. Only used for bandpass filtering.}
+consecutive windows, as in \code{\link[seewave]{spectro}}. Default is 0. Only used for bandpass filtering. Can be set globally for the current R session via the "ovlp" option (see \code{\link[base]{options}}).}
 
-\item{path}{Character string containing the directory path where the sound files are found. Only needed when 'X' is not an extended selection table. If not supplied the current working directory is used.}
+\item{path}{Character string containing the directory path where the sound files are found. Only needed when 'X' is not an extended selection table. If not supplied the current working directory is used. Can be set globally for the current R session via the "sound.files.path" option (see \code{\link[base]{options}}).}
 }
 \value{
 Object 'X' with an additional column, 'signal.to.noise.ratio',
@@ -85,7 +85,7 @@ Signal-to-noise ratio (SNR) measures sound amplitude level in relation to ambien
 {
 Araya-Salas M., E. Grabarczyk, M. Quiroz-Oliva, A. Garcia-Rodriguez, A. Rico-Guevara. (2023), baRulho: an R package to quantify degradation in animal acoustic signals .bioRxiv 2023.11.22.568305.
 
-Dabelsteen, T., Larsen, O. N., & Pedersen, S. B. (1993). Habitat-induced degradation of sound signals: Quantifying the effects of communication sounds and bird location on blur ratio, excess attenuation, and signal-to-noise ratio in blackbird song. The Journal of the Acoustical Society of America, 93(4), 2206.
+Holland J, Dabelsteen T, Pedersen SB, Paris AL (2001) Potential ranging cues contained within the energetic pauses of transmitted wren song. Bioacoustics 12(1):3-20.
 
 Darden, SK, Pedersen SB, Larsen ON, & Dabelsteen T. (2008). Sound transmission at ground level in a short-grass prairie habitat and its implications for long-range communication in the swift fox *Vulpes velox*. The Journal of the Acoustical Society of America, 124(2), 758-766.
 }

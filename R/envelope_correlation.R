@@ -2,9 +2,9 @@
 #'
 #' \code{envelope_correlation} measures amplitude envelope correlation of sounds referenced in an extended selection table.
 #' @inheritParams template_params
-#' @param env.smooth Numeric vector of length 1 to determine the length of the sliding window used for a sum smooth for amplitude envelope calculation (used internally by \code{\link[seewave]{env}}).
+#' @param env.smooth Numeric vector of length 1 to determine the length of the sliding window used for a sum smooth for amplitude envelope calculation (used internally by \code{\link[seewave]{env}}). Can be set globally for the current R session via the "env.smooth" option (see \code{\link[base]{options}}).
 #' @param ovlp Numeric vector of length 1 specifying the percentage of overlap between two
-#'   consecutive windows, as in \code{\link[seewave]{spectro}}. Default is 70.
+#'   consecutive windows, as in \code{\link[seewave]{spectro}}. Default is 70. Can be set globally for the current R session via the "ovlp" option (see \code{\link[base]{options}}).
 #' @return Object 'X' with an additional column, 'envelope.correlation', containing the computed envelope correlation coefficients.
 #' @export
 #' @name envelope_correlation
@@ -75,21 +75,20 @@ envelope_correlation <-
     
     # set clusters for windows OS
     if (Sys.info()[1] == "Windows" & cores > 1) {
-      cl <- parallel::makePSOCKcluster(getOption("cl.cores", cores))
+      cl <- parallel::makePSOCKcluster(cores)
     } else {
       cl <- cores
     }
     
-    if (pb) {
-      write(file = "", x = "Computing amplitude envelopes (step 1 out of 2):")
-    }
-    
     # calculate all envelopes apply function
     envs <-
-      warbleR:::pblapply_wrblr_int(
+      warbleR:::.pblapply(
         pbar = pb,
         X = target_sgnl_temp,
         cl = cl,
+        message = "computing amplitude envelopes", 
+        current = 1,
+        total = 2,
         FUN = function(x,
                        ssmth = env.smooth,
                        ovl = ovlp,
@@ -110,16 +109,14 @@ envelope_correlation <-
     # add sound file selec column as names to envelopes
     names(envs) <- target_sgnl_temp
     
-    # set options for loop
-    if (pb) {
-      write(file = "", x = "Computing envelope correlations (step 2 out of 2):")
-    }
-    
     # calculate all envelops apply function
-    X$envelope.correlation <- unlist(warbleR:::pblapply_wrblr_int(
+    envelope_correlation_list <- warbleR:::.pblapply(
       X = seq_len(nrow(X)),
       pbar = pb,
       cl = cl,
+      message = "computing envelope correlations", 
+      current = 2,
+      total = 2,
       FUN =
         function(x,
                  nvs = envs,
@@ -130,7 +127,10 @@ envelope_correlation <-
                    envs = nvs,
                    cor.method = cm)
         }
-    ))
+    )
+    
+    # unlist
+    X$envelope.correlation <- unlist(envelope_correlation_list)
     
     # # remove temporal columns
     X$.sgnl.temp <- NULL

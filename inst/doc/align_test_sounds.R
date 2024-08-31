@@ -1,7 +1,7 @@
 params <-
 list(EVAL = FALSE)
 
-## ----setup, eval = TRUE, echo = FALSE, message=FALSE--------------------------
+## ----setup, eval = TRUE, echo = FALSE, message=FALSE----------------------------------------------
 
 library(knitr)
 
@@ -33,17 +33,20 @@ registerS3method("knit_print", "data.frame", .print_df)
 
 # global option chunks
 knitr::opts_chunk$set(
-  dpi = 70,
-  fig.width = 8,
-  fig.height = 4,
-  out.width = "100%",
+  fig.width = 5, 
+  fig.height = 3.5,
+  dpi = 40,
+  comment = "",
+  out.width = "80%",
   fig.align = "center",
   message = TRUE,
   warning = TRUE
 )
 
+options(width = 100, max.print = 100)
 
-## ----eval = TRUE--------------------------------------------------------------
+
+## ----eval = TRUE----------------------------------------------------------------------------------
 
 # load packages
 library(viridis)
@@ -80,7 +83,7 @@ seewave::spectro(
 )
 
 
-## ----eval = TRUE, echo = TRUE-------------------------------------------------
+## ----eval = TRUE, echo = TRUE---------------------------------------------------------------------
 
 # synthesize
 synth_est2 <- baRulho::synth_sounds(
@@ -118,17 +121,17 @@ seewave::spectro(
 )
 
 
-## ----eval = TRUE--------------------------------------------------------------
+## ----eval = TRUE----------------------------------------------------------------------------------
 # check first 6 rows
 head(as.data.frame(synth_est2))
 
-## ----eval = TRUE--------------------------------------------------------------
+## ----eval = TRUE----------------------------------------------------------------------------------
 
 # check name of wave objects
 names(attributes(synth_est2)$wave.objects)
 
 
-## ----master sound file, eval = TRUE, echo = TRUE, fig.show='hide'-------------
+## ----master sound file, eval = TRUE, echo = TRUE, fig.show='hide'---------------------------------
 
 # create master sound file
 synth_master_annotations <- baRulho::master_sound_file(
@@ -139,7 +142,7 @@ synth_master_annotations <- baRulho::master_sound_file(
 )
 
 
-## ----spectro master 1, eval = TRUE--------------------------------------------
+## ----spectro master 1, eval = TRUE----------------------------------------------------------------
 
 # read wave file
 wave <-
@@ -156,7 +159,7 @@ seewave::spectro(
 )
 
 
-## ----eval = TRUE, echo = TRUE, fig.show='hide'--------------------------------
+## ----eval = TRUE, echo = TRUE, fig.show='hide'----------------------------------------------------
 
 # load example data from warbleR
 data(list = c(
@@ -177,7 +180,6 @@ writeWave(Phae.long4, file.path(tempdir(), "Phae.long4.wav"))
 est <- warbleR::selection_table(
   X = lbh_selec_table,
   extended = TRUE,
-  confirm.extended = FALSE,
   path = tempdir(),
   pb = FALSE
 )
@@ -193,7 +195,7 @@ master_annotations <- baRulho::master_sound_file(
   gap.duration = 0.3
 )
 
-## ----spectro master 2, eval = TRUE--------------------------------------------
+## ----spectro master 2, eval = TRUE----------------------------------------------------------------
 
 # read wave file
 wave <-
@@ -211,28 +213,28 @@ seewave::spectro(
 )
 
 
-## ----eval = TRUE--------------------------------------------------------------
+## ----eval = TRUE----------------------------------------------------------------------------------
 
 Rraven::exp_raven(master_annotations, path = tempdir(),
                   file.name = "example_master_selection_table")
 
-## -----------------------------------------------------------------------------
+## -------------------------------------------------------------------------------------------------
 knitr::include_graphics("example_master_table.jpg")
 
-## ----eval = TRUE--------------------------------------------------------------
+## ----eval = TRUE----------------------------------------------------------------------------------
 
 data("master_est")
 
 data("test_sounds_est")
 
 
-## ----eval = TRUE--------------------------------------------------------------
+## ----eval = TRUE----------------------------------------------------------------------------------
 
 unique(master_est$sound.files)
 unique(test_sounds_est$sound.files)
 
 
-## -----------------------------------------------------------------------------
+## -------------------------------------------------------------------------------------------------
 
 
 # first remove any other wave file in the temporary working directory (dont do it with your data!)
@@ -254,17 +256,17 @@ for (i in unique(test_sounds_est$sound.files)) {
 # make annotations a data frame
 master_annotations <- as.data.frame(master_est)
 
-## -----------------------------------------------------------------------------
+## -------------------------------------------------------------------------------------------------
 master_annotations
 
-## ----eval = TRUE--------------------------------------------------------------
+## ----eval = TRUE----------------------------------------------------------------------------------
 
 markers_position <-
   baRulho::find_markers(X = master_annotations, path = tempdir())
 
 markers_position
 
-## ----eval = TRUE--------------------------------------------------------------
+## ----eval = TRUE----------------------------------------------------------------------------------
 
 # lower window length
 markers_position <-
@@ -275,7 +277,7 @@ markers_position <-
 markers_position
 
 
-## ----eval = TRUE--------------------------------------------------------------
+## ----eval = TRUE----------------------------------------------------------------------------------
 
 aligned_tests <-
   baRulho::align_test_files(
@@ -286,13 +288,13 @@ aligned_tests <-
     path = tempdir()
   )
 
-## ----eval = TRUE--------------------------------------------------------------
+## ----eval = TRUE----------------------------------------------------------------------------------
 
 is.data.frame(aligned_tests)
 
 aligned_tests
 
-## ----eval = TRUE--------------------------------------------------------------
+## ----eval = TRUE----------------------------------------------------------------------------------
 
 aligned_imgs <- baRulho::plot_aligned_sounds(
   X = aligned_tests,
@@ -305,7 +307,7 @@ aligned_imgs <- baRulho::plot_aligned_sounds(
 aligned_imgs
 
 
-## ----echo = FALSE-------------------------------------------------------------
+## ----echo = FALSE---------------------------------------------------------------------------------
 
 # try to copy files to man/figures
 # fc <- file.copy(from = aligned_imgs[1:2], 
@@ -315,14 +317,14 @@ fc <- file.copy(from = aligned_imgs[c(1, 4)],
           to = file.path("../vignettes", basename(aligned_imgs[c(1, 4)])),overwrite = TRUE)
 
 
-## ----echo=FALSE---------------------------------------------------------------
+## ----echo=FALSE-----------------------------------------------------------------------------------
 
 knitr::include_graphics(basename(aligned_imgs[1]))
 
 knitr::include_graphics(basename(aligned_imgs[4]))
 
 
-## ----eval = FALSE-------------------------------------------------------------
+## ----eval = FALSE---------------------------------------------------------------------------------
 #  
 #  baRulho::manual_realign(
 #    X = aligned_tests,
@@ -332,12 +334,12 @@ knitr::include_graphics(basename(aligned_imgs[4]))
 #  )
 #  
 
-## ----eval = TRUE, echo=FALSE--------------------------------------------------
+## ----eval = TRUE, echo=FALSE----------------------------------------------------------------------
 
 knitr::include_graphics("manual_realign.gif")
 
 
-## ----eval = TRUE--------------------------------------------------------------
+## ----eval = TRUE----------------------------------------------------------------------------------
 
   data("test_sounds_est")
   data("master_est")
@@ -358,13 +360,13 @@ knitr::include_graphics("manual_realign.gif")
   unaligned_test_sounds_est$end + noise_time
   
 
-## ----eval = TRUE--------------------------------------------------------------
+## ----eval = TRUE----------------------------------------------------------------------------------
 
 #re align
 rts <- auto_realign(X = unaligned_test_sounds_est, Y = master_est)
 
 
-## ----eval = FALSE, echo = FALSE-----------------------------------------------
+## ----eval = FALSE, echo = FALSE-------------------------------------------------------------------
 #  
 #  # thsi code creates the images use to create the gif shown below
 #  # rename sound files so aligned and unaligned sounds are intercalated
@@ -396,7 +398,7 @@ rts <- auto_realign(X = unaligned_test_sounds_est, Y = master_est)
 #    sel.labels = NULL
 #  )
 
-## ----session info, echo=F-----------------------------------------------------
+## ----session info, echo=F-------------------------------------------------------------------------
 
 sessionInfo()
 

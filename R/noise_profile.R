@@ -139,18 +139,20 @@ noise_profile <-
     # set clusters for windows OS
     if (Sys.info()[1] == "Windows" & cores > 1) {
       cl <-
-        parallel::makePSOCKcluster(getOption("cl.cores", cores))
+        parallel::makePSOCKcluster(cores)
     } else {
       cl <- cores
     }
     
     # calculate STR
     noise.profiles <-
-      warbleR:::pblapply_wrblr_int(
+      warbleR:::.pblapply(
         pbar = pb,
         seq_len(nrow(X)),
         cl = cl,
-        .noise_profile,
+        message = "computing noise profile(s)",
+        total = 1,
+        FUN = .noise_profile,
         Y = X,
         noise.ref = noise.ref,
         mar = mar,

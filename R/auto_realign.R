@@ -5,7 +5,7 @@
 #' @param X object of class 'extended_selection_table' created by the function \code{\link[warbleR]{selection_table}} from the warbleR package. The object must include the following additional columns: 'sound.id', 'bottom.freq' and 'top.freq'.
 #' @param Y object of class 'extended_selection_table' (a class created by the function \code{\link[warbleR]{selection_table}} from the warbleR package) with the master sound file annotations. This should be the same data than that was used for finding the position of markers in \code{\link{find_markers}}. It should also contain a 'sound.id' column.
 #' @param ovlp Numeric vector of length 1 specifying the percentage of overlap between two
-#' consecutive windows, as in \code{\link[seewave]{spectro}}. Default is 90. High values slow down the function but produce more accurate results.
+#' consecutive windows, as in \code{\link[seewave]{spectro}}. Default is 90. High values slow down the function but produce more accurate results. Can be set globally for the current R session via the "ovlp" option (see \code{\link[base]{options}}).
 #' @return Object 'X' in which time parameters (columns 'start' and 'end') have been tailored to more closely match the start and end of the reference sound.
 #' @export
 #' @name auto_realign
@@ -77,12 +77,6 @@ auto_realign <-
     common_cols <- intersect(names(X), names(Y))  
     W <- rbind(X[, common_cols], Y[, common_cols])
     
-    # set number of processes for printing message
-    if (pb) {
-      on.exit(options(warbleR.steps = 3))
-      
-      options(warbleR.steps = 3)
-    }
     
     # adjust wl based on hop.size
     wl <- .adjust_wl(wl, W, hop.size)
@@ -119,7 +113,7 @@ auto_realign <-
     # fix end to include half the duration of the selection at both sides
     attr(Z, "check.results")$end[indx.algn] <- Z$end[indx.algn] <-
       vapply(indx.algn, function(x) {
-        wv.info <- warbleR::read_wave(W, index = x, header = TRUE)
+        wv.info <- warbleR::read_sound_file(W, index = x, header = TRUE)
         mxdur <- wv.info$samples / wv.info$sample.rate
         new.end <- W$end[x] + (W$end[x] - W$start[x]) * 0.7
         
@@ -154,10 +148,10 @@ auto_realign <-
     )
     
     # steps for warbleR message
-    options("int_warbleR_steps" = c(current = 0, total = 2))
-    
-    on.exit(options("int_warbleR_steps" = c(current = 0, total = 0)), add = TRUE)
-    
+      if (pb)  {
+    warbleR:::.update_progress(total = 2)
+        }
+
     warbleR_options(
       wl = wl,
       ovlp = ovlp,
@@ -171,16 +165,12 @@ auto_realign <-
     # run spcc
     xcorrs <- warbleR::cross_correlation(output = "list")
     
-    # message
-    if (pb) {
-      write(file = "", x = "finding peaks and aligning (step 2 out of 2)")
-    }
-    
     # find peaks and lags
     peaks <-
       .find_peaks(xc.output = xcorrs,
                   cores = cores,
-                  max.peak = TRUE)
+                  max.peak = TRUE, 
+                  pb = pb)
     
     
     # add column with original sound file selec labels

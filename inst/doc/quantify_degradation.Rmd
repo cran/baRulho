@@ -5,11 +5,13 @@ author:
 - <a href="https://marce10.github.io/">Marcelo Araya-Salas, PhD</a>
 date:  "`r Sys.Date()`"
 output:
-  # rmarkdown::html_document:
-  rmarkdown::html_vignette:
+  rmarkdown::html_document:
     self_contained: yes
     toc: true
     toc_depth: 3
+    toc_float:
+      collapsed: false
+      smooth_scroll: true
 editor_options: 
   chunk_output_type: console
 vignette: >
@@ -61,15 +63,15 @@ library(knitr)
 
 # global option chunks
 knitr::opts_chunk$set(
-  dpi = 70,
-  fig.width = 8,
-  fig.height = 4,
-  out.width = "100%",
+  fig.width = 5, 
+  fig.height = 3.5,
+  dpi = 40,
+  comment = "",
+  out.width = "80%",
   fig.align = "center",
   message = TRUE,
   warning = TRUE
 )
-
 ```
 
 <!-- light brown box -->
@@ -244,7 +246,7 @@ degrad_imgs
 ```
 
 ... and this is one of the images:
-```{r, echo=FALSE, out.width="100%", fig.align='center'}
+```{r, echo=FALSE}
 
 knitr::include_graphics(basename(degrad_imgs[1]))
 
@@ -302,9 +304,24 @@ head(blur_imgs)
 
 ```
 
-Output image files (in the working directory) look like these ones:
+Output image files (in the working directory) look like this one:
 
-<center><img src="blur_ratio_example.gif" alt="Blur ratio visualization"  width="500" height="400"></center>
+```{r, echo = FALSE}
+
+# try to copy files to vignettes
+# fc <- file.copy(from = aligned_imgs[1:2], 
+#           to = file.path("../man/figures", basename(aligned_imgs[c(1, 4)])))
+
+fc <- file.copy(from = blur_imgs[1], 
+          to = file.path("../vignettes", basename(blur_imgs[1])), overwrite = TRUE)
+
+```
+
+```{r, echo=FALSE}
+
+knitr::include_graphics(basename(blur_imgs[1]))
+
+```
 
 &nbsp;
 

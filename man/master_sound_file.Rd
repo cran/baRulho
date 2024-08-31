@@ -37,7 +37,7 @@ If \code{NULL} (default) then the current working directory will be used instead
 
 \item{cex}{Numeric vector of length 1 indicating the font size for the start and end markers. Default is 14.}
 
-\item{path}{Character string containing the directory path where the sound files are found. Only needed when 'X' is not an extended selection table. If not supplied the current working directory is used.}
+\item{path}{Character string containing the directory path where the sound files are found. Only needed when 'X' is not an extended selection table. If not supplied the current working directory is used. Can be set globally for the current R session via the "sound.files.path" option (see \code{\link[base]{options}}).}
 }
 \value{
 A .wav file in 'path' as well as a data frame in the R environment with the annotations (i.e. time position) of sounds in the master sound file and an additional column 'sound.id' that provides a unique id for each sound in the sound file. This is useful for identifying/labeling sounds in test (re-recorded) sound files for downstream analyses.
@@ -46,7 +46,7 @@ A .wav file in 'path' as well as a data frame in the R environment with the anno
 \code{master_sound_file} creates a master sound file to be used in playback experiments related to sound degradation.
 }
 \details{
-The function is intended to simplify the creation of master sound files for playback experiments in sound degradation studies. The function clips sounds from sound files (or wave objects from extended selection tables) and concatenates them in a single sound file. The function also adds acoustic markers at the start and end of the playback that can be used to time-sync test (re-recorded) sounds to facilitate the streamlining of degradation quantification.
+The function is intended to simplify the creation of master sound files for playback experiments in sound degradation studies. The function clips sounds from sound files (or wave objects from extended selection tables) and concatenates them in a single sound file. The function also adds acoustic markers at the start and end of the playback that can be used to time-sync test (re-recorded) sounds to facilitate the streamlining of degradation quantification. There is no predefined limit to the duration of the output master sound file, although long this be constrained by computer memory. As a reference, master sound files of up to 10 min have been created in a 16GB RAM laptop computer.
 }
 \examples{
 {
@@ -64,7 +64,7 @@ The function is intended to simplify the creation of master sound files for play
 
   # make an extended selection table
   est <- selection_table(
-    X = lbh_selec_table, extended = TRUE, confirm.extended = FALSE,
+    X = lbh_selec_table, extended = TRUE,
     path = tempdir()
   )
 

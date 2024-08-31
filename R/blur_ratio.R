@@ -2,10 +2,10 @@
 #'
 #' \code{blur_ratio} measures blur ratio in sounds referenced in an extended selection table.
 #' @inheritParams template_params
-#' @param env.smooth Numeric vector of length 1 determining the length of the sliding window (in amplitude samples) used for a sum smooth for amplitude envelope calculation (used internally by \code{\link[seewave]{env}}). Default is 200.
+#' @param env.smooth Numeric vector of length 1 determining the length of the sliding window (in amplitude samples) used for a sum smooth for amplitude envelope calculation (used internally by \code{\link[seewave]{env}}). Default is 200. Can be set globally for the current R session via the "env.smooth" option (see \code{\link[base]{options}}).
 #' @param envelopes Logical to control if envelopes are returned (as attributes, 'attributes(X)$envelopes'). Default is \code{FALSE}.
 #' @param ovlp Numeric vector of length 1 specifying the percentage of overlap between two
-#'   consecutive windows, as in \code{\link[seewave]{spectro}}. Default is 70. Used for applying bandpass filtering.
+#'   consecutive windows, as in \code{\link[seewave]{spectro}}. Default is 70. Used for applying bandpass filtering. Can be set globally for the current R session via the "ovlp" option (see \code{\link[base]{options}}).
 #' @param n.samples Numeric vector of length 1 specifying the number of amplitude samples to use for representing amplitude envelopes. Default is 100. If null the raw amplitude envelope is used (note that this can result in high RAM memory usage for large data sets). Amplitude envelope values are interpolated using \code{\link[stats]{approx}}.
 #' @return Object 'X' with an additional column,  'blur.ratio', containing the computed blur ratio values. If \code{envelopes = TRUE} the output would include amplitude envelopes for all sounds as attributes ('attributes(X)$envelopes').
 #' @export
@@ -78,12 +78,6 @@ blur_ratio <-
     # report errors
     .report_assertions(check_results)
     
-    # total number of steps depending on whether envelopes are returned
-    steps <- if (envelopes)
-      3
-    else
-      2
-    
     # get sampling rate assuming is the same for all sound files
     sampling.rate <- read_sound_file(X,
                                      index = 1,
@@ -96,7 +90,7 @@ blur_ratio <-
     
     # set clusters for windows OS
     if (Sys.info()[1] == "Windows" & cores > 1) {
-      cl <- parallel::makePSOCKcluster(getOption("cl.cores", cores))
+      cl <- parallel::makePSOCKcluster(cores)
     } else {
       cl <- cores
     }
@@ -108,19 +102,15 @@ blur_ratio <-
     target_sgnl_temp <-
       unique(c(X$.sgnl.temp[!is.na(X$reference)], X$reference[!is.na(X$reference)]))
     
-    # print message
-    if (pb)
-      write(
-        file = "",
-        x = paste0("Computing amplitude envelopes (step 1 out of ", steps, "):")
-      )
-    
     # calculate all envelops apply function
     envs <-
-      warbleR:::pblapply_wrblr_int(
+      warbleR:::.pblapply(
         pbar = pb,
         X = target_sgnl_temp,
         cl = cl,
+        message = "computing amplitude envelopes", 
+        current = 1,
+        total =  if(envelopes) 3 else 2,
         FUN = function(x,
                        ssmth = env.smooth,
                        ovl = ovlp,
@@ -143,34 +133,31 @@ blur_ratio <-
     # add sound file selec column as names to envelopes
     names(envs) <- target_sgnl_temp
     
-    # set options to run loops
-    if (pb)
-      write(file = "",
-            x = paste0("Computing blur ratio (step 2 out of ", steps, "):"))
-    
     # get blur ratio
     # calculate all envelops apply function
-    X$blur.ratio <-
-      unlist(warbleR:::pblapply_wrblr_int(
-        pbar = pb,
-        X = seq_len(nrow(X)),
-        cl = cl,
-        FUN = function(x,
-                       Q = X,
-                       nvs = envs,
-                       wle = wl,
-                       ovp = ovlp,
-                       sr = sampling.rate) {
-          .blur(
-            x,
-            X = Q,
-            envs = nvs,
-            ovlp = ovp,
-            wl = wle,
-            sampling.rate = sr
-          )
-        }
-      ))
+    blur_ratio_list <- warbleR:::.pblapply(
+      pbar = pb,
+      X = seq_len(nrow(X)),
+      cl = cl,
+      message = "computing blur ratio", 
+      current = 2, total = if(envelopes) 3 else 2,
+      FUN = function(x,
+                     Q = X,
+                     nvs = envs,
+                     wle = wl,
+                     ovp = ovlp,
+                     sr = sampling.rate) {
+        .blur(
+          x,
+          X = Q,
+          envs = nvs,
+          ovlp = ovp,
+          wl = wle,
+          sampling.rate = sr
+        )
+      }
+    )
+    X$blur.ratio <- unlist(blur_ratio_list)
     
     
     # remove temporal column
@@ -178,12 +165,9 @@ blur_ratio <-
     
     # convert to list instead of extended selection table, add envelopes
     if (envelopes) {
-      if (pb)
-        write(file = "", x = "Saving envelopes (step 3 out of 3):")
-      
       # get envelopes in a data frame
       env.dfs <-
-        warbleR:::pblapply_wrblr_int(pbar = pb, seq_along(envs), cl = cl, function(y) {
+        warbleR:::.pblapply(pbar = pb, seq_along(envs), cl = cl, message = "saving envelopes", current = 3, total = 3, function(y) {
           # extract 1 envelope
           x <- envs[[y]]
           

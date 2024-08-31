@@ -8,11 +8,12 @@
 #' \item \code{1}: compare sounds (by 'sound.id') with their counterpart that was recorded at the closest distance to source (e.g. compare a sound recorded at 5m, 10m and 15m with its counterpart recorded at 1m). This is the default method. The function will try to use references from the same transect. However, if there is another test sound from the same 'sound.id' at a shorter distance in other transects, it will be used as reference instead.
 #' \item \code{2}: compare all sounds with their counterpart recorded at the distance immediately before within a transect (e.g. a sound recorded at 10m compared with the same sound recorded at 5m, then sound recorded at 15m compared with same sound recorded at 10m and so on). 'transect' column in 'X' is required.
 #' }
+#' Can be set globally for the current R session via the "method" option (see \code{\link[base]{options}}).
 #' @details This function adds a 'reference' column defining which sounds will be used by other functions as reference. Two methods are available (see 'methods' argument description). It will attempt to use re-recorded sounds from the shortest distance in the same transect as reference. However, if there is another re-recorded sound from the same 'sound.id' at a shorter distance in other transects, it will be used as reference instead. This behavior aims to account for the fact that in this type of experiments reference sounds are typically recorded at 1 m and at single transect. Note that if users want to define their own reference sound this can be set manually. If so, NAs must be used to indicate rows to be ignored. References must be indicated as a the combination of the 'sound.files' and 'selec' column. For instance, '10m.wav-1' indicates that the row in which the 'selec' column is '1' and the sound file is '10m.wav' should be used as reference. The function also checks that the information 'X' is in the right format so it wont produce errors in downstream analysis (see 'X' argument description for details on format). The function will ignore rows with 'sound.id' 'ambient', 'start_marker' and 'end_marker'
 #' @return An object similar to 'X' with one additional column, 'reference', with the ID of the sounds to be used as reference by degradation-quantifying functions in downstream analyses. The ID is created as \code{paste(X$sound.files, X$selec, sep = "-")}. 
 #' @export
 #' @family quantify degradation
-#' @seealso \code{\link[warbleR]{check_wavs}}, \code{\link[warbleR]{check_sels}}
+#' @seealso \code{\link[warbleR]{check_sound_files}}, \code{\link[warbleR]{check_sels}}
 #' @export
 #' @name set_reference_sounds
 #' @export
@@ -65,15 +66,15 @@ set_reference_sounds <-
     
     if (!warbleR::is_extended_selection_table(X) & !is_selection_table(X)) {
       # print message
-      if (pb) {
-        write(file = "", x = "Checking annotations (step 1 out of 2):")
+      if (pb)  {
+        warbleR:::.update_progress(total = if (!warbleR::is_extended_selection_table(X) & !is_selection_table(X)) 2 else 1)
       }
+      
       
       X_check <-
         warbleR::check_sels(
           X = X,
           parallel = cores,
-          verbose = FALSE,
           pb = pb,
           fix.selec = FALSE,
           path = path
@@ -94,28 +95,28 @@ set_reference_sounds <-
       
       # set clusters for windows OS
       if (Sys.info()[1] == "Windows" & cores > 1) {
-        cl <- parallel::makePSOCKcluster(getOption("cl.cores", cores))
+        cl <- parallel::makePSOCKcluster(cores)
       } else {
         cl <- cores
       }
       
       # add column with names of the reference sounds to be compared against
       if (is.null(X$reference)) {
-        if (pb & !warbleR::is_extended_selection_table(X) & !is_selection_table(X)) {
-          write(file = "", x = "Computing references (step 2 out of 2):")
-        }
         
-        X$reference <-
-          unlist(
-            warbleR:::pblapply_wrblr_int(
+        reference_list <-
+            warbleR:::.pblapply(
               X = X2$.sgnl.temp,
               pbar = pb,
               cl = cl,
+              message = "computing references",
+              current = if (!warbleR::is_extended_selection_table(X) & !is_selection_table(X)) 2 else 1, 
+              total = if (!warbleR::is_extended_selection_table(X) & !is_selection_table(X)) 2 else 1,
               .set_ref,
               meth = method,
               Z = X2
             )
-          )
+          
+        X$reference <- unlist(reference_list)
       }
       
       # remove temp column

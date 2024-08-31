@@ -4,7 +4,7 @@
 #' @inheritParams template_params
 #' @param ovlp Numeric vector of length 1 specifying \% of overlap between two
 #' consecutive windows, as in \code{\link[seewave]{spectro}}. Default is 90. High values of ovlp
-#' slow down the function but produce more accurate results.
+#' slow down the function but produce more accurate results. Can be set globally for the current R session via the "ovlp" option (see \code{\link[base]{options}}).
 #' @return Object 'X' with an additional column, 'cross.correlation', containing the computed spectrogram cross-correlation coefficients.
 #' @export
 #' @name spcc
@@ -64,7 +64,6 @@ spcc <-
     # add sound file selec colums to X (weird column name so it does not overwrite user columns)
     X$.sgnl.temp <- paste(X$sound.files, X$selec, sep = "-")
     
-    
     # # put together in a single
     comp_mat <- cbind(X$.sgnl.temp, X$reference)
     
@@ -86,9 +85,9 @@ spcc <-
     )
     
     # steps for warbleR message
-    options("int_warbleR_steps" = c(current = 0, total = 1))
+    options("int_warbleR_steps" = list(current = 0, total = 1))
     
-    on.exit(options("int_warbleR_steps" = c(current = 0, total = 0)), add = TRUE)
+    on.exit(options("int_warbleR_steps" = list(current = 0, total = 0)), add = TRUE)
     
     warbleR_options(
       wl = wl,
@@ -101,7 +100,7 @@ spcc <-
     
     # run spcc
     xcorrs <-
-      warbleR::cross_correlation(X = X,
+      cross_correlation(X = X,
                                  cor.method = "pearson",
                                  path = path)$max.xcorr.matrix
     

@@ -1,7 +1,7 @@
 params <-
 list(EVAL = FALSE)
 
-## ----eval= TRUE, echo=FALSE---------------------------------------------------
+## ----eval= TRUE, echo=FALSE-----------------------------------------------------------------------
 
 library(knitr)
 
@@ -37,17 +37,17 @@ library(knitr)
 
 # global option chunks
 knitr::opts_chunk$set(
-  dpi = 70,
-  fig.width = 8,
-  fig.height = 4,
-  out.width = "100%",
+  fig.width = 5, 
+  fig.height = 3.5,
+  dpi = 40,
+  comment = "",
+  out.width = "80%",
   fig.align = "center",
   message = TRUE,
   warning = TRUE
 )
 
-
-## ----eval=FALSE---------------------------------------------------------------
+## ----eval=FALSE-----------------------------------------------------------------------------------
 #  
 #  # load packages
 #  library(baRulho)
@@ -59,7 +59,7 @@ knitr::opts_chunk$set(
 #  
 #  test_sounds_est
 
-## ----eval = TRUE, echo = FALSE, message=FALSE---------------------------------
+## ----eval = TRUE, echo = FALSE, message=FALSE-----------------------------------------------------
 
 # load packages
 library(baRulho)
@@ -73,25 +73,25 @@ data("test_sounds_est")
 .print_df(test_sounds_est, highlight = c("sound.id", "transect", "distance"))
 
 
-## ----eval=TRUE----------------------------------------------------------------
+## ----eval=TRUE------------------------------------------------------------------------------------
 
 # count selection per recordings
 unique(test_sounds_est$sound.files)
 
 
-## ----eval = FALSE-------------------------------------------------------------
+## ----eval = FALSE---------------------------------------------------------------------------------
 #  
 #  table(test_sounds_est$sound.id, test_sounds_est$distance)
 #  
 
-## ----eval = TRUE, echo=FALSE--------------------------------------------------
+## ----eval = TRUE, echo=FALSE----------------------------------------------------------------------
 
 tb <- as.data.frame.matrix(table(test_sounds_est$sound.id, test_sounds_est$distance))
 
 .print_df(tb, height = NULL, row.names = TRUE)
 
 
-## ----eval = FALSE-------------------------------------------------------------
+## ----eval = FALSE---------------------------------------------------------------------------------
 #  
 #  # add reference column
 #  test_sounds_est <- set_reference_sounds(test_sounds_est, method = 1)
@@ -99,7 +99,7 @@ tb <- as.data.frame.matrix(table(test_sounds_est$sound.id, test_sounds_est$dista
 #  # print
 #  test_sounds_est
 
-## ----echo = FALSE-------------------------------------------------------------
+## ----echo = FALSE---------------------------------------------------------------------------------
 
 # add reference column
 test_sounds_est <- set_reference_sounds(test_sounds_est, method = 1)
@@ -107,7 +107,7 @@ test_sounds_est <- set_reference_sounds(test_sounds_est, method = 1)
 .print_df(test_sounds_est, highlight = c("reference"))
 
 
-## ----eval = TRUE--------------------------------------------------------------
+## ----eval = TRUE----------------------------------------------------------------------------------
 # sort to order panels
 test_sounds_est <-
   test_sounds_est[order(test_sounds_est$sound.id,
@@ -117,7 +117,7 @@ test_sounds_est <-
 # create plots
 degrad_imgs <- plot_degradation(test_sounds_est, dest.path = tempdir())
 
-## ----echo = FALSE-------------------------------------------------------------
+## ----echo = FALSE---------------------------------------------------------------------------------
 
 # try to copy files to vignettes
 # fc <- file.copy(from = aligned_imgs[1:2], 
@@ -127,48 +127,63 @@ fc <- file.copy(from = degrad_imgs[1],
           to = file.path("../vignettes", basename(degrad_imgs[1])), overwrite = TRUE)
 
 
-## ----eval = TRUE--------------------------------------------------------------
+## ----eval = TRUE----------------------------------------------------------------------------------
 
 degrad_imgs
 
 
-## ----echo=FALSE, out.width="100%", fig.align='center'-------------------------
+## ----echo=FALSE-----------------------------------------------------------------------------------
 
 knitr::include_graphics(basename(degrad_imgs[1]))
 
 
-## ----eval = FALSE-------------------------------------------------------------
+## ----eval = FALSE---------------------------------------------------------------------------------
 #  
 #  # run blur ratio
 #  br <- blur_ratio(X = test_sounds_est)
 #  
 
-## ----eval = TRUE, echo = FALSE------------------------------------------------
+## ----eval = TRUE, echo = FALSE--------------------------------------------------------------------
 
 # run blur ratio
 br <- blur_ratio(test_sounds_est)
 
 
-## ----eval = FALSE-------------------------------------------------------------
+## ----eval = FALSE---------------------------------------------------------------------------------
 #  
 #  # see output
 #  br
 
-## ----echo = FALSE-------------------------------------------------------------
+## ----echo = FALSE---------------------------------------------------------------------------------
 
 .print_df(br, highlight = c("blur.ratio"))
 
 
-## ----eval = TRUE--------------------------------------------------------------
+## ----eval = TRUE----------------------------------------------------------------------------------
 # plot blur ratio
 blur_imgs <- plot_blur_ratio(X = test_sounds_est, dest.path = tempdir())
 
-## ----eval = TRUE--------------------------------------------------------------
+## ----eval = TRUE----------------------------------------------------------------------------------
 
 head(blur_imgs)
 
 
-## -----------------------------------------------------------------------------
+## ----echo = FALSE---------------------------------------------------------------------------------
+
+# try to copy files to vignettes
+# fc <- file.copy(from = aligned_imgs[1:2], 
+#           to = file.path("../man/figures", basename(aligned_imgs[c(1, 4)])))
+
+fc <- file.copy(from = blur_imgs[1], 
+          to = file.path("../vignettes", basename(blur_imgs[1])), overwrite = TRUE)
+
+
+## ----echo=FALSE-----------------------------------------------------------------------------------
+
+knitr::include_graphics(basename(blur_imgs[1]))
+
+
+## -------------------------------------------------------------------------------------------------
 
 # get envelopes
 br <- blur_ratio(X = test_sounds_est, envelopes = TRUE)
@@ -185,7 +200,7 @@ ggplot(envs, aes(x = time, y = amp, col = distance)) +
   theme_classic()
 
 
-## -----------------------------------------------------------------------------
+## -------------------------------------------------------------------------------------------------
 
 # get envelopes
 br <- blur_ratio(X = test_sounds_est, envelopes = TRUE, env.smooth = 800)
@@ -201,35 +216,35 @@ ggplot(envs, aes(x = time, y = amp, col = distance)) +
   theme_classic()
 
 
-## ----eval = FALSE-------------------------------------------------------------
+## ----eval = FALSE---------------------------------------------------------------------------------
 #  
 #  # run Spectrum blur ratio
 #  sbr <- spectrum_blur_ratio(test_sounds_est)
 #  
 
-## ----eval = TRUE, echo = FALSE------------------------------------------------
+## ----eval = TRUE, echo = FALSE--------------------------------------------------------------------
 
 # run Spectrum blur ratio
 sbr <- spectrum_blur_ratio(test_sounds_est)
 
 
-## ----eval = FALSE, echo = FALSE-----------------------------------------------
+## ----eval = FALSE, echo = FALSE-------------------------------------------------------------------
 #  
 #  sbr <- spectrum_blur_ratio(test_sounds_est)
 #  
 #  # make the gif here
 #  # https://ezgif.com
 
-## ----eval = FALSE-------------------------------------------------------------
+## ----eval = FALSE---------------------------------------------------------------------------------
 #  
 #  # see output
 #  sbr
 
-## ----echo = FALSE-------------------------------------------------------------
+## ----echo = FALSE---------------------------------------------------------------------------------
 
 .print_df(sbr, highlight = c("spectrum.blur.ratio"))
 
-## -----------------------------------------------------------------------------
+## -------------------------------------------------------------------------------------------------
 sbr <- spectrum_blur_ratio(X = test_sounds_est, spectra = TRUE)
 
 spctr <- attributes(sbr)$spectra
@@ -245,52 +260,52 @@ ggplot(spctr[spctr$freq > 0.3,], aes(y = amp, x = freq, col = distance)) +
   theme_classic()
 
 
-## ----eval = TRUE--------------------------------------------------------------
+## ----eval = TRUE----------------------------------------------------------------------------------
 
 # run  envelope correlation
 ea <- excess_attenuation(test_sounds_est)
 
 
-## ----eval = FALSE-------------------------------------------------------------
+## ----eval = FALSE---------------------------------------------------------------------------------
 #  # print output
 #  ea
 
-## ----echo = FALSE-------------------------------------------------------------
+## ----echo = FALSE---------------------------------------------------------------------------------
 
 .print_df(ea, highlight = c("excess.attenuation"))
 
 
-## ----eval = TRUE--------------------------------------------------------------
+## ----eval = TRUE----------------------------------------------------------------------------------
 
 # run  envelope correlation
 ec <- envelope_correlation(test_sounds_est)
 
 
-## ----eval = FALSE-------------------------------------------------------------
+## ----eval = FALSE---------------------------------------------------------------------------------
 #  # print output
 #  ec
 
-## ----echo = FALSE-------------------------------------------------------------
+## ----echo = FALSE---------------------------------------------------------------------------------
 
 .print_df(ea, highlight = c("envelope.correlation"))
 
 
-## ----eval = TRUE--------------------------------------------------------------
+## ----eval = TRUE----------------------------------------------------------------------------------
 
 # run spectrum correlation
 sc <- spectrum_correlation(test_sounds_est)
 
 
-## ----eval = FALSE-------------------------------------------------------------
+## ----eval = FALSE---------------------------------------------------------------------------------
 #  # print output
 #  sc
 
-## ----echo = FALSE-------------------------------------------------------------
+## ----echo = FALSE---------------------------------------------------------------------------------
 
 .print_df(sc, highlight = c("spectrum.correlation"))
 
 
-## ----eval = TRUE--------------------------------------------------------------
+## ----eval = TRUE----------------------------------------------------------------------------------
 
 # run signal to noise ratio
 snr <-
@@ -300,62 +315,62 @@ snr <-
                         mar = 0.1)
 
 
-## ----eval = FALSE-------------------------------------------------------------
+## ----eval = FALSE---------------------------------------------------------------------------------
 #  # print output
 #  snr
 
-## ----echo = FALSE-------------------------------------------------------------
+## ----echo = FALSE---------------------------------------------------------------------------------
 
 .print_df(snr, highlight = c("signal.to.noise.ratio"))
 
 
-## ----eval = TRUE--------------------------------------------------------------
+## ----eval = TRUE----------------------------------------------------------------------------------
 
 # run tail to signal ratio
 tsr <- tail_to_signal_ratio(test_sounds_est, tsr.formula = 1, mar = 0.05)
 
 
-## ----eval = FALSE-------------------------------------------------------------
+## ----eval = FALSE---------------------------------------------------------------------------------
 #  # print output
 #  
 #  tsr
 
-## ----echo = FALSE-------------------------------------------------------------
+## ----echo = FALSE---------------------------------------------------------------------------------
 
 .print_df(tsr, highlight = c("tail.to.signal.ratio"))
 
 
-## ----eval = TRUE--------------------------------------------------------------
+## ----eval = TRUE----------------------------------------------------------------------------------
 
 # run spcc
 sc <- spcc(X = test_sounds_est, wl = 512)
 
 
-## ----eval = FALSE-------------------------------------------------------------
+## ----eval = FALSE---------------------------------------------------------------------------------
 #  # print output
 #  sc
 
-## ----echo = FALSE-------------------------------------------------------------
+## ----echo = FALSE---------------------------------------------------------------------------------
 
 .print_df(sc, highlight = c("cross.correlation"))
 
 
-## ----eval = TRUE--------------------------------------------------------------
+## ----eval = TRUE----------------------------------------------------------------------------------
 
 # run noise profile
 np <-
   noise_profile(X = test_sounds_est[test_sounds_est$distance > 5,], mar = 0.05)
 
-## ----eval = FALSE-------------------------------------------------------------
+## ----eval = FALSE---------------------------------------------------------------------------------
 #  # print output
 #  head(np, 20)
 
-## ----echo = FALSE-------------------------------------------------------------
+## ----echo = FALSE---------------------------------------------------------------------------------
 
 .print_df(np[1:20, ], highlight = c("freq", "amp"))
 
 
-## ----eval = TRUE--------------------------------------------------------------
+## ----eval = TRUE----------------------------------------------------------------------------------
 
 ggplot(np, aes(y = amp, x = freq, col = sound.files)) +
   geom_line(linewidth = 1.4) +
@@ -364,7 +379,7 @@ ggplot(np, aes(y = amp, x = freq, col = sound.files)) +
   coord_flip() +
   theme_classic()
 
-## ----eval = TRUE, warning = FALSE---------------------------------------------
+## ----eval = TRUE, warning = FALSE-----------------------------------------------------------------
 
 np <-
   noise_profile(X = test_sounds_est[test_sounds_est$distance > 5, ],
@@ -386,7 +401,7 @@ ggplot(np, aes(
   theme_classic()
 
 
-## ----eval = TRUE--------------------------------------------------------------
+## ----eval = TRUE----------------------------------------------------------------------------------
 
 np <- noise_profile(
   X = test_sounds_est[test_sounds_est$distance > 5,],
@@ -412,7 +427,7 @@ ggplot(np, aes(
   theme_classic()
 
 
-## ----session info, echo=F-----------------------------------------------------
+## ----session info, echo=F-------------------------------------------------------------------------
 
 sessionInfo()
 

@@ -4,7 +4,7 @@
 #' @inheritParams template_params
 #' @param spec.smooth Numeric vector of length 1 determining the length of the sliding window used for a sum smooth for power spectrum calculation (in kHz). Default is 5.
 #' @param ovlp Numeric vector of length 1 specifying the percentage of overlap between two
-#'   consecutive windows, as in \code{\link[seewave]{spectro}}. Default is 70.
+#'   consecutive windows, as in \code{\link[seewave]{spectro}}. Default is 70. Can be set globally for the current R session via the "ovlp" option (see \code{\link[base]{options}}).
 #' @param n.bins Numeric vector of length 1 specifying the number of frequency bins to use for representing power spectra. Default is 100. If null the raw power spectrum is used (note that this can result in high RAM memory usage for large data sets). Power spectrum values are interpolated using \code{\link[stats]{approx}}.
 #' @return Object 'X' with an additional column,  'spectrum.correlation', containing the computed frequency spectrum correlation coefficients.
 #' @export
@@ -78,22 +78,20 @@ spectrum_correlation <-
     # set clusters for windows OS
     if (Sys.info()[1] == "Windows" & cores > 1) {
       cl <-
-        parallel::makePSOCKcluster(getOption("cl.cores", cores))
+        parallel::makePSOCKcluster(cores)
     } else {
       cl <- cores
     }
     
-    # print message
-    if (pb) {
-      write(file = "", x = "Computing power spectra (step 1 out of 2):")
-    }
-    
     # calculate all spectra apply function
     specs <-
-      warbleR:::pblapply_wrblr_int(
+      warbleR:::.pblapply(
         pbar = pb,
         X = target_sgnl_temp,
         cl = cl,
+        message = "computing power spectra", 
+        current = 1,
+        total = 2,
         FUN = function(x,
                        ssmth = spec.smooth,
                        wln = wl,
@@ -116,17 +114,16 @@ spectrum_correlation <-
     
     # add sound file selec names to envelopes (weird column name so it does not overwrite user columns)
     names(specs) <- target_sgnl_temp
-    
-    if (pb) {
-      write(file = "", x = "Computing spectrum correlations (step 2 out of 2):")
-    }
-    
+
     # calculate all envelops apply function
-    X$spectrum.correlation <-
-      unlist(warbleR:::pblapply_wrblr_int(
+    spectrum_correlation_list <- 
+      warbleR:::.pblapply(
         X = seq_len(nrow(X)),
         pbar = pb,
         cl = cl,
+        message = "computing spectrum correlations", 
+        current = 2, 
+        total = 2,
         FUN =
           function(x,
                    spcs = specs,
@@ -139,8 +136,10 @@ spectrum_correlation <-
               cor.method = cm
             )
           }
-      ))
+      )
     
+    # unlist results
+    X$spectrum.correlation <- unlist(spectrum_correlation_list)
     # remove temporal columns
     X$.sgnl.temp <- NULL
     

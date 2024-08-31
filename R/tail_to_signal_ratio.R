@@ -16,7 +16,7 @@
 #' is NULL. Ignored if \code{bp = NULL}. If supplied, 'hop.size' is ignored.
 #' Note that lower values will increase time resolution, which is more important for amplitude calculations.
 #' @param ovlp Numeric vector of length 1 specifying the percentage of overlap between two
-#'   consecutive windows, as in \code{\link[seewave]{spectro}}. Default is 0. Only used for bandpass filtering.
+#'   consecutive windows, as in \code{\link[seewave]{spectro}}. Default is 0. Only used for bandpass filtering. Can be set globally for the current R session via the "ovlp" option (see \code{\link[base]{options}}).
 #' @return Object 'X' with an additional column, 'tail.to.signal.ratio',
 #' with the tail-to-signal ratio values (in dB).
 #' @export
@@ -88,14 +88,14 @@ tail_to_signal_ratio <- function(X,
   # set clusters for windows OS
   if (Sys.info()[1] == "Windows" & cores > 1) {
     cl <-
-      parallel::makePSOCKcluster(getOption("cl.cores", cores))
+      parallel::makePSOCKcluster(cores)
   } else {
     cl <- cores
   }
   
   # calculate STR
-  X$tail.to.signal.ratio <-
-    unlist(warbleR:::pblapply_wrblr_int(X = seq_len(nrow(X)), pbar = pb, cl = cl, function(y) {
+  X$tail.to.signal.ratio <- tail_to_signal_ratio_list <- 
+    warbleR:::.pblapply(X = seq_len(nrow(X)), pbar = pb, cl = cl, message = "computing tail-to-signal ratio", total = 1, function(y) {
       if (X$sound.id[y] != "ambient") {
         # Read sound files to get sample rate and length
         r <-
@@ -215,7 +215,10 @@ tail_to_signal_ratio <- function(X,
       }
       
       return(str)
-    }))
+    })
+  
+  # unlist results
+  X$tail.to.signal.ratio <- unlist(tail_to_signal_ratio_list)
   
   # fix call if not a data frame
   if (!is.data.frame(X)) {
