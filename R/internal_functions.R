@@ -298,7 +298,7 @@
     
     return(iter_dist)
   }
-## function to measure blur ratio
+## function to get spectrum for plotting spectral blur ratio
 
 .spctr <-
   function(y,
@@ -333,11 +333,6 @@
       )
     }
     
-    # smoothing
-    clp.spc[, 2] <-
-      warbleR::envelope(x = clp.spc[, 2],
-                        ssmooth = spec.smooth)
-    
     # thin
     if (!is.null(n.bins)) {
       # reduce size of envelope
@@ -358,6 +353,12 @@
         clp.spc <-  cbind(NA, NA)
       }
     }
+    
+    # smoothing
+    clp.spc[, 2] <-
+      warbleR::envelope(x = clp.spc[, 2],
+                        ssmooth = spec.smooth)
+    
     
     return(clp.spc)
   }
@@ -1333,13 +1334,14 @@
     ea <- NA
   } else {
     # extract mean envelope of sounds
+    sig_env <- X$sig_env[y]
     sig_env_REF <- X$sig_env[X$.sgnl.temp == rfrnc]
     dist_REF <- X$distance[X$.sgnl.temp == rfrnc]
     dist_SIG <- X$distance[y]
-    
-      # excess attenuation = (total attenuation - spheric spreading attenuation) 
-    ea <- (-20 * log10(sig_env_REF / X$sig_env[y])) - (20 * log10(1 / dist_SIG))
-  }
+      
+    # excess attenuation = (total attenuation - spheric spreading attenuation) 
+    ea <- (20 * log10(sig_env_REF / sig_env)) - (-20 * log10(dist_REF / dist_SIG))
+    }
   
   if (is.infinite(ea))
     ea <- NA
@@ -1902,7 +1904,7 @@
     
     # method 1 compare to closest distance to source
     if (meth == 1) {
-      # if column transect is found select the lowest distance in that trasnect
+      # if column transect is found select the lowest distance in that transect
       if (!is.null(Z$transect)) {
         W <-
           Z[Z$transect == Z$transect[Z$.sgnl.temp == x] &
@@ -2276,14 +2278,33 @@
         spc[, 2] <-
           warbleR::envelope(x = spc[, 2], ssmooth = env.smooth)
         
+        # reduce number of points so polygon printing runs faster
+        if (nrow(spc) > 50)
+        spc_list <-
+          stats::approx(
+            x = spc[, 1],
+            y = spc[, 2],
+            n = 50,
+            method = "linear"
+          )
+        
+        # make it a matrix
+        spc <- cbind(spc_list[[1]], spc_list[[2]])
+        
         # filter to flim
         spc <- spc[spc[, 1] > fl[1] & spc[, 1] < fl[2],]
+        
+        # add 0s at star and end so polygon doesnt twist
+        spc[c(1, nrow(spc)), 2] <- 0
+        
+        # flip values so they are aligned at the right side
+        spc[,2] <- abs(spc[,2] - max(spc[,2]))
         
         # set white plot
         plot(
           x = spc[, 2],
           y = spc[, 1],
-          type = "l",
+          type = "n",
           frame.plot = FALSE,
           yaxt = "n",
           xaxt = "n",
@@ -2309,12 +2330,6 @@
           col = bg_sp_env,
           border = NA
         )
-        
-        # add 0s at star and end so polygon doesnt twist
-        spc[c(1, nrow(spc)), 2] <- 0
-        
-        # flip values so they are aligned at the right side
-        spc[,2] <- abs(spc[,2] - max(spc[,2]))
         
         # add polygon with spectrum shape
         polygon(spc[, 2:1], col = spc_fill, border = NA)
@@ -2364,6 +2379,19 @@
           cbind(seq(0, duration(wave), along.with = envlp), envlp)
         
         
+        # reduce number of points so polygon printing runs faster
+        if (nrow(envlp) > 50)
+        envlp_list <-
+          stats::approx(
+            x = envlp[, 1],
+            y = envlp[, 2],
+            n = 50,
+            method = "linear"
+          )
+        
+        # make it a matrix
+        envlp <- cbind(envlp_list[[1]], envlp_list[[2]])
+        
         # set graphic parameters
         par(mar = c(0, 0, 0, 0),
             new = TRUE)
@@ -2373,7 +2401,7 @@
         plot(
           x = envlp[, 1],
           y = envlp[, 2],
-          type = "l",
+          type = "n",
           frame.plot = FALSE,
           yaxt = "n",
           xaxt = "n",
@@ -2386,16 +2414,16 @@
         rect(
           0,
           min(envlp[, 2]),
-          max(envlp[, 2]),
-          max(envlp[, 2]),
+          max(envlp[, 1]),
           max(envlp[, 2]),
           col = "white",
           border = NA
         )
+
         rect(
           0,
           min(envlp[, 2]),
-          max(envlp[, 2]),
+          max(envlp[, 1]),
           max(envlp[, 2]),
           col = bg_sp_env,
           border = NA
