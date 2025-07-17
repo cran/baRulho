@@ -13,7 +13,7 @@ set_reference_sounds(
 )
 }
 \arguments{
-\item{X}{Object of class 'data.frame', 'selection_table' or 'extended_selection_table' (the last 2 classes are created by the function \code{\link[warbleR]{selection_table}} from the warbleR package) with the reference to the test sounds . Must contain the following columns: 1) "sound.files": name of the .wav files, 2) "selec": unique selection identifier (within a sound file), 3) "start": start time and 4) "end": end time of selections, 5)  "bottom.freq": low frequency for bandpass, 6) "top.freq": high frequency for bandpass, 7) "sound.id": ID of sounds used to identify counterparts across distances (and transects if more than 1) and 8) "distance": distance (numeric) at which each test sound was re-recorded. A 'transect' column labeling those sounds recorded in the same transect is required if 'method = 2'. 'X' can only have 1 copy for any given sound id in a distance or a transect-distance combination (if column 'transect' is supplied). In addition, 'selec' column values in 'X' cannot be duplicated within a sound file ('sound.files' column) as this combination is used to refer to specific rows in the output 'reference' column.}
+\item{X}{Object of class 'data.frame', 'selection_table' or 'extended_selection_table' (the last 2 classes are created by the function \code{\link[warbleR]{selection_table}} from the warbleR package) with the test sound files' annotations . Must contain the following columns: 1) "sound.files": name of the .wav files, 2) "selec": unique selection identifier (within a sound file), 3) "start": start time and 4) "end": end time of selections, 5)  "bottom.freq": low frequency for bandpass, 6) "top.freq": high frequency for bandpass, 7) "sound.id": ID of sounds used to identify counterparts across distances (and transects if more than 1) and 8) "distance": distance (numeric) at which each test sound was re-recorded. A 'transect' column labeling those sounds recorded in the same transect is required if 'method = 2'. 'X' can only have 1 copy for any given sound id in a distance or a transect-distance combination (if column 'transect' is supplied). In addition, 'selec' column values in 'X' cannot be duplicated within a sound file ('sound.files' column) as this combination is used to refer to specific rows in the output 'reference' column.}
 
 \item{method}{Integer vector of length 1 to indicate the 'experimental design' for measuring degradation. Two methods are available:
 \itemize{
@@ -53,7 +53,7 @@ Y <- set_reference_sounds(X = X, method = 2)
 }
 }
 \references{
-{Araya-Salas, M., & Smith-Vidaurre, G. (2017). warbleR: An R package to streamline analysis of animal acoustic signals. Methods in Ecology and Evolution, 8(2), 184-191.}
+Araya-Salas, M., & Smith-Vidaurre, G. (2017). warbleR: An R package to streamline analysis of animal acoustic signals. Methods in Ecology and Evolution, 8(2), 184-191.
 }
 \seealso{
 \code{\link[warbleR]{check_sound_files}}, \code{\link[warbleR]{check_sels}}

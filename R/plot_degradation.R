@@ -25,7 +25,7 @@
 #' @return One ore more image files with a multipanel figure of spectrograms of test sound by distance, sound id and transect. It also returns the file path of the images invisibly.
 #' @export
 #' @name plot_degradation
-#' @details The function aims to simplify the visual inspection of sound degradation by producing multipanel figures (saved in 'dest.path') containing visualizations of each test sound and its reference. Sounds are sorted by distance (columns) and transect (if more than 1). Visualizations include spectrograms, amplitude envelopes and power spectra (the last 2 are optional). Each row includes all the copies of a sound id for a given transect (the row label includes the sound id in the first line and transect in the second line), also including its reference if it comes from another transect. Ambient noise annotations (sound.id 'ambient') are excluded. Amplitude envelopes and power spectra are computed using the functions  \code{\link[warbleR]{envelope}} (warbleR package) and \code{\link[seewave]{spec}} (seewave package) respectively. This two visualizations show the power distribution in time and frequency between the minimum and maximum power values for each sound. Therefore scales are not necessarily comparable across panels.  
+#' @details The function aims to simplify the visual inspection of sound degradation by producing multipanel figures (saved in 'dest.path') containing visualizations of each test sound and its reference. Sounds are sorted by distance (columns) and transect (if more than 1). Visualizations include spectrograms, amplitude envelopes and power spectra (the last 2 are optional). Each row includes all the copies of a sound id for a given transect (the row label includes the sound id in the first line and transect in the second line), also including its reference if it comes from another transect. Ambient noise annotations (sound.id 'ambient') are excluded. Amplitude envelopes and power spectra are computed using the functions  \code{\link[warbleR]{envelope}} (warbleR package) and \code{\link[seewave]{spec}} (seewave package) respectively. This two visualizations show the power distribution in time and frequency between the minimum and maximum power values for each sound. Therefore scales are not necessarily comparable across panels. If transect id is not supplied in 'X' (i.e. no 'transect' column) the function assumes that all sounds are from the same transect. Only a single copy of a test sound ("sound.id" label) is allowed per transect/distance combination. The function uses internally \code{\link[seewave]{spectro}} to create the spectrograms.  
 #' @examples \donttest{
 #'   # load example data
 #'   data("test_sounds_est")
@@ -68,7 +68,7 @@
 #' @family quantify degradation
 #' @seealso \code{\link{blur_ratio}}, \code{\link{plot_aligned_sounds}}, \code{\link{plot_degradation}}
 #' @references {
-#' Araya-Salas M., E. Grabarczyk, M. Quiroz-Oliva, A. Garcia-Rodriguez, A. Rico-Guevara. (2023), baRulho: an R package to quantify degradation in animal acoustic signals .bioRxiv 2023.11.22.568305.
+#' Araya-Salas, M., Grabarczyk, E. E., Quiroz-Oliva, M., Garcia-Rodriguez, A., & Rico-Guevara, A. (2025). Quantifying degradation in animal acoustic signals with the R package baRulho. Methods in Ecology and Evolution, 00, 1-12. https://doi.org/10.1111/2041-210X.14481
 #' }
 #'
 plot_degradation <-
@@ -189,28 +189,28 @@ plot_degradation <-
         current = 1,
         total = 1,
         FUN = function(x) .plot_degrad(x, 
-        X,
-        soundid_X,
-        flim,
-        path,
-        dest.path,
-        img_width,
-        img_heigth,
-        res,
-        page_layout,
-        nrow,
-        ncol,
-        envelope,
-        spectrum,
-        distances,
-        wl,
-        spc_fill,
-        bg_sp_env,
-        bg_titles,
-        ovlp,
-        collevels, 
-        env.smooth,
-        palette))
+                                       X,
+                                       soundid_X,
+                                       flim,
+                                       path,
+                                       dest.path,
+                                       img_width,
+                                       img_heigth,
+                                       res,
+                                       page_layout,
+                                       nrow,
+                                       ncol,
+                                       envelope,
+                                       spectrum,
+                                       distances,
+                                       wl,
+                                       spc_fill,
+                                       bg_sp_env,
+                                       bg_titles,
+                                       ovlp,
+                                       collevels, 
+                                       env.smooth,
+                                       palette))
     
     # message to let know users where the files have been saved
     .message(

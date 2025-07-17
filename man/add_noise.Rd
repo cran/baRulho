@@ -14,11 +14,12 @@ add_noise(
   max.iterations = 1000,
   kind = c("pink", "white", "brown", "red", "power"),
   alpha = 1,
+  seed = 123,
   ...
 )
 }
 \arguments{
-\item{X}{Object of class 'extended_selection_table' (created by the function \code{\link[warbleR]{selection_table}} from the warbleR package), generated 'by element', with the reference to the test sounds (typically the output of \code{\link{align_test_files}}). Must contain the following columns: 1) "sound.files": name of the .wav files, 2) "selec": unique selection identifier (within a sound file), 3) "start": start time and 4) "end": end time of selections, 5) "bottom.freq": low frequency for bandpass, 6) "top.freq": high frequency for bandpass and 7) "sound.id": ID of sounds (needed to calculate signal to noise ratio internally using \code{\link{signal_to_noise_ratio}}).}
+\item{X}{Object of class 'extended_selection_table' (created by the function \code{\link[warbleR]{selection_table}} from the warbleR package), generated 'by element' (see 'https://marce10.github.io/warbleR/articles/b_annotation_data_format.html#by-element-vs-by-song-extended-selection-tables'), with the test sound files' annotations (which in baRulho is typically the output of \code{\link{align_test_files}}). Must contain the following columns: 1) "sound.files": name of the .wav files, 2) "selec": unique selection identifier (within a sound file), 3) "start": start time and 4) "end": end time of selections, 5) "bottom.freq": low frequency for bandpass, 6) "top.freq": high frequency for bandpass. If the "sound.id" column is supplied noise is only added to those sounds with a 'sound.id' different from "ambient", "start_marker" or "end_marker".}
 
 \item{mar}{numeric vector of length 1. Specifies the margins adjacent to
 the start point of the annotation over which to measure ambient noise.}
@@ -37,7 +38,9 @@ the start point of the annotation over which to measure ambient noise.}
 
 \item{alpha}{Numeric vector of length 1. The power for the power law noise (defaults are 1 for pink and 1.5 for red noise). Only used when \code{kind = "power"}.}
 
-\item{...}{Additional arguments to be passed internally to \code{\link{signal_to_noise_ratio}}.}
+\item{seed}{Numeric vector of length 1. Seed for random number generation. Default is 123. If NULL, the seed is not set.}
+
+\item{...}{Additional arguments to be passed internally to \code{\link{signal_to_noise_ratio}}. Note that "custom" noise reference (argument 'noise.ref' in \code{\link{signal_to_noise_ratio}}) is currently not supported.}
 }
 \value{
 Object 'X' in which the wave objects have been modified to match the target signal-to-noise ratio. It also includes an additional column, 'adjusted.snr', with the new signal-to-noise ratio values.
@@ -61,10 +64,8 @@ X_noise <- add_noise(X = X[1:5, ], mar = 0.2, target.snr = 3)
 }
 }
 \references{
-{
-Araya-Salas M., E. Grabarczyk, M. Quiroz-Oliva, A. Garcia-Rodriguez, A. Rico-Guevara. (2023), baRulho: an R package to quantify degradation in animal acoustic signals .bioRxiv 2023.11.22.568305.
+Araya-Salas, M., Grabarczyk, E. E., Quiroz-Oliva, M., Garcia-Rodriguez, A., & Rico-Guevara, A. (2025). Quantifying degradation in animal acoustic signals with the R package baRulho. Methods in Ecology and Evolution, 00, 1-12. https://doi.org/10.1111/2041-210X.14481
 Timmer. J and M. König (1995): On generating power law noise. Astron. Astrophys. 300, 707-710.
-}
 }
 \seealso{
 \code{\link{signal_to_noise_ratio}}

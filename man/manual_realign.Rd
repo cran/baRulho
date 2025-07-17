@@ -30,7 +30,7 @@ manual_realign(
 )
 }
 \arguments{
-\item{X}{Object of class 'data.frame', 'selection_table' or 'extended_selection_table' (the last 2 classes are created by the function \code{\link[warbleR]{selection_table}} from the warbleR package) with the reference to the test sounds (typically the output of \code{\link{align_test_files}}). Must contain the following columns: 1) "sound.files": name of the .wav files, 2) "selec": unique selection identifier (within a sound file), 3) "start": start time and 4) "end": end time of selections, 5)  "bottom.freq": low frequency for bandpass, 6) "top.freq": high frequency for bandpass and 7) "sound.id": ID of sounds used to identify counterparts across distances. Each sound must have a unique ID within a distance.}
+\item{X}{Object of class 'data.frame', 'selection_table' or 'extended_selection_table' (the last 2 classes are created by the function \code{\link[warbleR]{selection_table}} from the warbleR package) with the test sound files' annotations (typically the output of \code{\link{align_test_files}}) to be aligned. Must contain the following columns: 1) "sound.files": name of the .wav files, 2) "selec": unique selection identifier (within a sound file), 3) "start": start time and 4) "end": end time of selections, 5)  "bottom.freq": low frequency for bandpass, 6) "top.freq": high frequency for bandpass and 7) "sound.id": ID of sounds used to identify counterparts across distances. Each sound must have a unique ID within a given distance.}
 
 \item{Y}{object of class 'data.frame', 'selection_table' or 'extended_selection_table' (the last 2 classes are created by the function \code{\link[warbleR]{selection_table}} from the warbleR package) with the master sound file annotations. This should be the same data than that was used for finding the position of markers in \code{\link{find_markers}}. It should also contain a 'sound.id' column.}
 
@@ -88,7 +88,7 @@ This function allows the interactive adjustment of the alignment of test sound f
 \examples{
 {
   # load example data
-  data("master_est")
+  data(list = c("master_est", "test_sounds_est"))
 
   # save example files in working director to recreate a case in which working
   # with sound files instead of extended selection tables.
@@ -106,7 +106,7 @@ This function allows the interactive adjustment of the alignment of test sound f
   path = tempdir())
 
   # align all test sounds
-  alg.tests <- align_test_files(X = master_est, Y = markers)
+  alg.tests <- align_test_files(X = master_est, Y = markers, path = tempdir())
 
   # add error to alignment
   lag <- (as.numeric(as.factor(alg.tests$sound.files)) - 2) / 30
@@ -121,9 +121,7 @@ This function allows the interactive adjustment of the alignment of test sound f
 }
 }
 \references{
-{
-Araya-Salas M., E. Grabarczyk, M. Quiroz-Oliva, A. Garcia-Rodriguez, A. Rico-Guevara. (2023), baRulho: an R package to quantify degradation in animal acoustic signals .bioRxiv 2023.11.22.568305.
-}
+Araya-Salas, M., Grabarczyk, E. E., Quiroz-Oliva, M., Garcia-Rodriguez, A., & Rico-Guevara, A. (2025). Quantifying degradation in animal acoustic signals with the R package baRulho. Methods in Ecology and Evolution, 00, 1-12. https://doi.org/10.1111/2041-210X.14481
 }
 \seealso{
 \code{\link{auto_realign}}; \code{\link{find_markers}}; \code{\link{align_test_files}}

@@ -18,7 +18,8 @@ synth_sounds(
   shuffle = FALSE,
   hrm.freqs = c(1/2, 1/3, 2/3, 1/4, 3/4, 1/5, 1/6, 1/7, 1/8, 1/9, 1/10),
   sampling.rate = 44.1,
-  pb = TRUE
+  pb = TRUE,
+  freq.range = 2
 )
 }
 \arguments{
@@ -50,6 +51,8 @@ frequency harmonic will be simulated.}
 \item{sampling.rate}{Numeric vector of length 1. Sets the sampling frequency of the wave object (in kHz). Default is 44.1.}
 
 \item{pb}{Logical argument to control if progress bar is shown. Default is \code{TRUE}.  Can be set globally for the current R session via the "pb" option (see \code{\link[base]{options}}).}
+
+\item{freq.range}{Numeric vector of length 1 with the frequency range around the simulated frequency in which signals will modulate. Default is 2 which means that sounds will range +/- 1 kHz around the target frequency.}
 }
 \value{
 An extended selection table, which can be input into \code{\link{master_sound_file}} to create the .wav file. The table contains columns for each of the varying features a 'treatment' column (useful to tell the acoustic features of each sound) and a 'replicate' column indicating the replicates for each 'treatment'.
@@ -85,15 +88,14 @@ synthetic_est <- synth_sounds(
 
 }
 \references{
-{
 Araya-Salas, M., & Smith-Vidaurre, G. (2017). warbleR: An R package to streamline analysis of animal acoustic signals. Methods in Ecology and Evolution, 8(2), 184-191.
-}
 }
 \seealso{
 \code{\link[warbleR]{simulate_songs}} from the package warbleR.
 
 Other prepare acoustic data: 
-\code{\link{master_sound_file}()}
+\code{\link{master_sound_file}()},
+\code{\link{spot_ambient_noise}()}
 }
 \author{
 Marcelo Araya-Salas (\email{marcelo.araya@ucr.ac.cr})

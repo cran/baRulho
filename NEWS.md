@@ -1,3 +1,35 @@
+baRulho 2.1.5
+=========================
+
+## NEW FEATURES
+
+* new argument `freq_range` in `synth_sounds()` to limit the frequency range of modulated sounds
+* new function `spot_ambient_noise()` to find segments of ambient noise to be used as reference by other functions
+* new argument `seed` in `add_noise()` to let users set a seed for reproducibility (or not)
+
+### MINOR IMPROVEMENTS
+
+* Improve error messages for functions working with master annotations
+* Remove requirement of "sound.id" column in `add_noise()` and `signal_to_noise_ratio()`
+* Fix bug in `add_noise()` in which '...' were not sent internally to `signal_to_noise_ratio()`
+* Improved error message when missing columns in supplied `Y` data frames 
+
+baRulho 2.1.4
+=========================
+
+### MINOR IMPROVEMENTS
+
+* Fix bug in `find_markers()` and `manual_realign()` when missing one marker that is not used
+
+
+baRulho 2.1.3
+=========================
+
+### MINOR IMPROVEMENTS
+
+* Improved performance issue of `plot_degradation()` 
+
+
 baRulho 2.1.2
 =========================
 

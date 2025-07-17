@@ -2,7 +2,7 @@
 #'
 #' \code{signal_to_noise_ratio} measures attenuation as signal-to-noise ratio of sounds referenced in an extended selection table.
 #' @inheritParams template_params
-#' @param X Object of class 'data.frame', 'selection_table' or 'extended_selection_table' (the last 2 classes are created by the function \code{\link[warbleR]{selection_table}} from the warbleR package) with the reference to the test sounds (typically the output of \code{\link{align_test_files}}). Must contain the following columns: 1) "sound.files": name of the .wav files, 2) "selec": unique selection identifier (within a sound file), 3) "start": start time and 4) "end": end time of selections, 5)  "bottom.freq": low frequency for bandpass, 6) "top.freq": high frequency for bandpass and 7) "sound.id": ID of sounds used to identify counterparts across distances (only needed for "custom" noise reference, see "noise.ref" argument).
+#' @param X Object of class 'data.frame', 'selection_table' or 'extended_selection_table' (the last 2 classes are created by the function \code{\link[warbleR]{selection_table}} from the warbleR package) with the test sound files' annotations (typically the output of \code{\link{align_test_files}}). Must contain the following columns: 1) "sound.files": name of the .wav files, 2) "selec": unique selection identifier (within a sound file), 3) "start": start time and 4) "end": end time of selections, 5)  "bottom.freq": low frequency for bandpass, 6) "top.freq": high frequency for bandpass and 7) "sound.id": ID of sounds used to identify counterparts across distances (only needed for "custom" noise reference, see "noise.ref" argument). If the "sound.id" column is supplied then SNR is only computed for those rows with a sound.id different from "ambient", "start_marker" or "end_marker". 
 #' @param mar numeric vector of length 1. Specifies the margins adjacent to
 #'   the start point of the annotation over which to measure ambient noise.
 #' @param eq.dur Logical. Controls whether the ambient noise segment that is measured has the same duration
@@ -38,13 +38,10 @@
 #' @author Marcelo Araya-Salas (\email{marcelo.araya@@ucr.ac.cr})
 #' @family quantify degradation
 #' @seealso \code{\link{excess_attenuation}}
-#' @references {
-#' Araya-Salas M., E. Grabarczyk, M. Quiroz-Oliva, A. Garcia-Rodriguez, A. Rico-Guevara. (2023), baRulho: an R package to quantify degradation in animal acoustic signals .bioRxiv 2023.11.22.568305.
-#'
+#' @references 
+#' Araya-Salas, M., Grabarczyk, E. E., Quiroz-Oliva, M., Garcia-Rodriguez, A., & Rico-Guevara, A. (2025). Quantifying degradation in animal acoustic signals with the R package baRulho. Methods in Ecology and Evolution, 00, 1-12. https://doi.org/10.1111/2041-210X.14481
 #' Holland J, Dabelsteen T, Pedersen SB, Paris AL (2001) Potential ranging cues contained within the energetic pauses of transmitted wren song. Bioacoustics 12(1):3-20.
-#'
 #' Darden, SK, Pedersen SB, Larsen ON, & Dabelsteen T. (2008). Sound transmission at ground level in a short-grass prairie habitat and its implications for long-range communication in the swift fox *Vulpes velox*. The Journal of the Acoustical Society of America, 124(2), 758-766.
-#' }
 
 signal_to_noise_ratio <-
   function(X,
@@ -86,7 +83,6 @@ signal_to_noise_ratio <-
         path = path,
         header = TRUE
       )$sample.rate
-      
     
     # adjust wl based on hop.size
     wl <- .adjust_wl(wl, X, hop.size, path)
@@ -106,6 +102,14 @@ signal_to_noise_ratio <-
       .stop(
         "'ambient' selections must be contained in 'X' and labeled in a 'sound.id' column as 'ambient' when 'noise.ref = 'custom'"
       )
+    }
+    
+    if (noise.ref == "custom" & warbleR::is_extended_selection_table(X)){
+      if (!attributes(X)$by.song[[1]]) {
+        .stop(
+          "if 'X' is an extended selection table, it should be created 'by.song' when 'noise.ref = 'custom'' (see 'https://marce10.github.io/warbleR/articles/b_annotation_data_format.html#by-element-vs-by-song-extended-selection-tables')"
+        )
+      }
     }
     
     if (noise.ref == "custom" &
@@ -131,10 +135,25 @@ signal_to_noise_ratio <-
       cl <- cores
     }
     
+    # get index number
+    # exclude "ambient" sounds if "sound.id" column was supplied
+    target_rows <- if (!is.null(X$sound.id)){
+      which(!X$sound.id %in% c("ambient", "start_marker", "end_marker")) } else {
+        seq_len(nrow(X))
+      }
+    
+    # target rows for rms differ when reference is "ambient"
+    target_rows_rms <- if (noise.ref == "custom") {
+      which(!X$sound.id %in% c("start_marker", "end_marker"))
+    } else {
+      target_rows
+      }
+
+    
     # calculate all RMS of envelopes with a apply function
     rms_list <-
       warbleR:::.pblapply(
-        X = seq_len(nrow(X)),
+        X = target_rows_rms,
         pbar = pb,
         cl = cl,
         message = "computing signal-to-noise ratio",
@@ -152,13 +171,13 @@ signal_to_noise_ratio <-
       )
     
     # add sound file selec column and names to envelopes (weird column name so it does not overwrite user columns)
-    X$.y <-
-      names(rms_list) <- paste(X$sound.files, X$selec, sep = "-")
+    X$.y <- paste(X$sound.files, X$selec, sep = "-")
+    names(rms_list) <- paste(X$sound.files[target_rows_rms], X$selec[target_rows_rms], sep = "-")
     
     # calculate SNR
-    X$signal.to.noise.ratio <-
+    X$signal.to.noise.ratio[target_rows] <-
       vapply(
-        X = seq_len(nrow(X)),
+        X = target_rows,
         FUN = .snr,
         W = X,
         noise.ref = noise.ref,

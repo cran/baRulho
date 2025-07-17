@@ -31,7 +31,7 @@ plot_degradation(
 )
 }
 \arguments{
-\item{X}{The output of \code{\link{set_reference_sounds}} which is an object of class 'data.frame', 'selection_table' or 'extended_selection_table' (the last 2 classes are created by the function \code{\link[warbleR]{selection_table}} from the warbleR package) with the reference to the test sounds . Must contain the following columns: 1) "sound.files": name of the .wav files, 2) "selec": unique selection identifier (within a sound file), 3) "start": start time and 4) "end": end time of selections, 5) "bottom.freq": low frequency for bandpass, 6) "top.freq": high frequency for bandpass, 7) "sound.id": ID of sounds used to identify counterparts across distances and 8) "reference": identity of sounds to be used as reference for each test sound (row). See \code{\link{set_reference_sounds}} for more details on the structure of 'X'.}
+\item{X}{The output of \code{\link{set_reference_sounds}} which is an object of class 'data.frame', 'selection_table' or 'extended_selection_table' (the last 2 classes are created by the function \code{\link[warbleR]{selection_table}} from the warbleR package) with the test sound files' annotations . Must contain the following columns: 1) "sound.files": name of the .wav files, 2) "selec": unique selection identifier (within a sound file), 3) "start": start time and 4) "end": end time of selections, 5) "bottom.freq": low frequency for bandpass, 6) "top.freq": high frequency for bandpass, 7) "sound.id": ID of sounds used to identify counterparts across distances and 8) "reference": identity of sounds to be used as reference for each test sound (row). See \code{\link{set_reference_sounds}} for more details on the structure of 'X'.}
 
 \item{nrow}{Numeric vector of length 1 with the number of rows per image file. Default is 4. This would be dynamically adjusted if more rows than needed are set.}
 
@@ -88,7 +88,7 @@ One ore more image files with a multipanel figure of spectrograms of test sound 
 \code{plot_degradation} creates multipanel plots (as image files) with reference and test sounds by distance and transect.
 }
 \details{
-The function aims to simplify the visual inspection of sound degradation by producing multipanel figures (saved in 'dest.path') containing visualizations of each test sound and its reference. Sounds are sorted by distance (columns) and transect (if more than 1). Visualizations include spectrograms, amplitude envelopes and power spectra (the last 2 are optional). Each row includes all the copies of a sound id for a given transect (the row label includes the sound id in the first line and transect in the second line), also including its reference if it comes from another transect. Ambient noise annotations (sound.id 'ambient') are excluded. Amplitude envelopes and power spectra are computed using the functions  \code{\link[warbleR]{envelope}} (warbleR package) and \code{\link[seewave]{spec}} (seewave package) respectively. This two visualizations show the power distribution in time and frequency between the minimum and maximum power values for each sound. Therefore scales are not necessarily comparable across panels.
+The function aims to simplify the visual inspection of sound degradation by producing multipanel figures (saved in 'dest.path') containing visualizations of each test sound and its reference. Sounds are sorted by distance (columns) and transect (if more than 1). Visualizations include spectrograms, amplitude envelopes and power spectra (the last 2 are optional). Each row includes all the copies of a sound id for a given transect (the row label includes the sound id in the first line and transect in the second line), also including its reference if it comes from another transect. Ambient noise annotations (sound.id 'ambient') are excluded. Amplitude envelopes and power spectra are computed using the functions  \code{\link[warbleR]{envelope}} (warbleR package) and \code{\link[seewave]{spec}} (seewave package) respectively. This two visualizations show the power distribution in time and frequency between the minimum and maximum power values for each sound. Therefore scales are not necessarily comparable across panels. If transect id is not supplied in 'X' (i.e. no 'transect' column) the function assumes that all sounds are from the same transect. Only a single copy of a test sound ("sound.id" label) is allowed per transect/distance combination. The function uses internally \code{\link[seewave]{spectro}} to create the spectrograms.
 }
 \examples{
 \donttest{
@@ -132,7 +132,7 @@ The function aims to simplify the visual inspection of sound degradation by prod
 }
 \references{
 {
-Araya-Salas M., E. Grabarczyk, M. Quiroz-Oliva, A. Garcia-Rodriguez, A. Rico-Guevara. (2023), baRulho: an R package to quantify degradation in animal acoustic signals .bioRxiv 2023.11.22.568305.
+Araya-Salas, M., Grabarczyk, E. E., Quiroz-Oliva, M., Garcia-Rodriguez, A., & Rico-Guevara, A. (2025). Quantifying degradation in animal acoustic signals with the R package baRulho. Methods in Ecology and Evolution, 00, 1-12. https://doi.org/10.1111/2041-210X.14481
 }
 }
 \seealso{

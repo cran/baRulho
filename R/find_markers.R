@@ -38,9 +38,8 @@
 #'   markers <- find_markers(X = master_est, test.files = unique(test_sounds_est$sound.files)[2])
 #' }
 #' @author Marcelo Araya-Salas (\email{marcelo.araya@@ucr.ac.cr})
-#' @references {
-#' Araya-Salas M., E. Grabarczyk, M. Quiroz-Oliva, A. Garcia-Rodriguez, A. Rico-Guevara. (2023), baRulho: an R package to quantify degradation in animal acoustic signals .bioRxiv 2023.11.22.568305.
-#' }
+#' @references
+#' Araya-Salas, M., Grabarczyk, E. E., Quiroz-Oliva, M., Garcia-Rodriguez, A., & Rico-Guevara, A. (2025). Quantifying degradation in animal acoustic signals with the R package baRulho. Methods in Ecology and Evolution, 00, 1-12. https://doi.org/10.1111/2041-210X.14481
 
 find_markers <-
   function(X,
@@ -67,8 +66,7 @@ find_markers <-
     .report_assertions(check_results)
     
     if (!all(markers %in% X$sound.id))
-      .stop("at least one value in 'markers' not found in 'sound.id' column in 'X'")
-    else
+      .stop("at least one value in 'markers' not found in 'sound.id' column in 'X'") else
       X <- X[X$sound.id %in% markers,]
     
     # get sound files in path
@@ -107,7 +105,7 @@ find_markers <-
         parallel = 1,
         pb = FALSE,
         skip.error = TRUE,
-        files = c(test.files, unique(X$sound.files))
+        files = c(test.files, as.character(unique(X$sound.files)))
       )
     
     if (length(unique(wi$sample.rate)) > 1) {

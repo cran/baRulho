@@ -95,7 +95,8 @@ synth_est2 <- baRulho::synth_sounds(
   am = TRUE,
   shuffle = TRUE,
   seed = 123,
-  sampling.rate = 12
+  sampling.rate = 12, 
+  freq.range = 1
 )
 
 # convert into a single wave object
@@ -171,10 +172,10 @@ data(list = c(
 ))
 
 # save sound files to temporary folder
-writeWave(Phae.long1, file.path(tempdir(), "Phae.long1.wav"))
-writeWave(Phae.long2, file.path(tempdir(), "Phae.long2.wav"))
-writeWave(Phae.long3, file.path(tempdir(), "Phae.long3.wav"))
-writeWave(Phae.long4, file.path(tempdir(), "Phae.long4.wav"))
+tuneR::writeWave(Phae.long1, file.path(tempdir(), "Phae.long1.wav"))
+tuneR::writeWave(Phae.long2, file.path(tempdir(), "Phae.long2.wav"))
+tuneR::writeWave(Phae.long3, file.path(tempdir(), "Phae.long3.wav"))
+tuneR::writeWave(Phae.long4, file.path(tempdir(), "Phae.long4.wav"))
 
 # make an extended selection table
 est <- warbleR::selection_table(
@@ -245,12 +246,12 @@ unlink(list.files(
 ))
 
 # save master sound file
-writeWave(object = attr(master_est, "wave.objects")[[1]],
+tuneR::writeWave(object = attr(master_est, "wave.objects")[[1]],
           file.path(tempdir(), "master.wav"))
 
 # save test sound files
 for (i in unique(test_sounds_est$sound.files)) {
-  writeWave(object = attr(test_sounds_est, "wave.objects")[[i]], file.path(tempdir(), i))
+  tuneR::writeWave(object = attr(test_sounds_est, "wave.objects")[[i]], file.path(tempdir(), i))
 }
 
 # make annotations a data frame
@@ -325,14 +326,14 @@ knitr::include_graphics(basename(aligned_imgs[4]))
 
 
 ## ----eval = FALSE---------------------------------------------------------------------------------
-#  
-#  baRulho::manual_realign(
-#    X = aligned_tests,
-#    Y = master_annotations,
-#    duration = 2.4,
-#    path = tempdir()
-#  )
-#  
+# 
+# baRulho::manual_realign(
+#   X = aligned_tests,
+#   Y = master_annotations,
+#   duration = 2.4,
+#   path = tempdir()
+# )
+# 
 
 ## ----eval = TRUE, echo=FALSE----------------------------------------------------------------------
 
@@ -363,40 +364,40 @@ knitr::include_graphics("manual_realign.gif")
 ## ----eval = TRUE----------------------------------------------------------------------------------
 
 #re align
-rts <- auto_realign(X = unaligned_test_sounds_est, Y = master_est)
+rts <- baRulho::auto_realign(X = unaligned_test_sounds_est, Y = master_est)
 
 
 ## ----eval = FALSE, echo = FALSE-------------------------------------------------------------------
-#  
-#  # thsi code creates the images use to create the gif shown below
-#  # rename sound files so aligned and unaligned sounds are intercalated
-#  unalg <-
-#    warbleR::rename_waves_est(
-#      playback_est_unaligned,
-#      playback_est_unaligned$sound.files,
-#      new.selec = seq(1, 200, by = 2)[1:nrow(playback_est_unaligned)]
-#    )
-#  alg <-
-#    warbleR::rename_waves_est(playback_est_aligned,
-#                     playback_est_aligned$sound.files,
-#                     new.selec = seq(2, 200, by = 2)[1:nrow(playback_est_aligned)])
-#  
-#  # add label
-#  unalg$type <- "Before aligning"
-#  alg$type <- "After aligning"
-#  
-#  # put together in a single ext sel tab
-#  unalg.alg <- rbind(unalg, alg)
-#  
-#  # create spectrograms
-#  warbleR::spectrograms(
-#    unalg.alg[unalg.alg$sound.id != "ambient",],
-#    dest.path = tempdir(),
-#    res = 100,
-#    wl = 300,
-#    title.labels = "type",
-#    sel.labels = NULL
-#  )
+# 
+# # thsi code creates the images use to create the gif shown below
+# # rename sound files so aligned and unaligned sounds are intercalated
+# unalg <-
+#   warbleR::rename_waves_est(
+#     playback_est_unaligned,
+#     playback_est_unaligned$sound.files,
+#     new.selec = seq(1, 200, by = 2)[1:nrow(playback_est_unaligned)]
+#   )
+# alg <-
+#   warbleR::rename_waves_est(playback_est_aligned,
+#                    playback_est_aligned$sound.files,
+#                    new.selec = seq(2, 200, by = 2)[1:nrow(playback_est_aligned)])
+# 
+# # add label
+# unalg$type <- "Before aligning"
+# alg$type <- "After aligning"
+# 
+# # put together in a single ext sel tab
+# unalg.alg <- rbind(unalg, alg)
+# 
+# # create spectrograms
+# warbleR::spectrograms(
+#   unalg.alg[unalg.alg$sound.id != "ambient",],
+#   dest.path = tempdir(),
+#   res = 100,
+#   wl = 300,
+#   title.labels = "type",
+#   sel.labels = NULL
+# )
 
 ## ----session info, echo=F-------------------------------------------------------------------------
 

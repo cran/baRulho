@@ -2,7 +2,7 @@
 #'
 #' \code{manual_realign} plots spectrograms to visually inspect alignment precision on test sound files.
 #' @inheritParams template_params
-#' @param X Object of class 'data.frame', 'selection_table' or 'extended_selection_table' (the last 2 classes are created by the function \code{\link[warbleR]{selection_table}} from the warbleR package) with the reference to the test sounds (typically the output of \code{\link{align_test_files}}). Must contain the following columns: 1) "sound.files": name of the .wav files, 2) "selec": unique selection identifier (within a sound file), 3) "start": start time and 4) "end": end time of selections, 5)  "bottom.freq": low frequency for bandpass, 6) "top.freq": high frequency for bandpass and 7) "sound.id": ID of sounds used to identify counterparts across distances. Each sound must have a unique ID within a distance.
+#' @param X Object of class 'data.frame', 'selection_table' or 'extended_selection_table' (the last 2 classes are created by the function \code{\link[warbleR]{selection_table}} from the warbleR package) with the test sound files' annotations (typically the output of \code{\link{align_test_files}}) to be aligned. Must contain the following columns: 1) "sound.files": name of the .wav files, 2) "selec": unique selection identifier (within a sound file), 3) "start": start time and 4) "end": end time of selections, 5)  "bottom.freq": low frequency for bandpass, 6) "top.freq": high frequency for bandpass and 7) "sound.id": ID of sounds used to identify counterparts across distances. Each sound must have a unique ID within a given distance.
 #' @param Y object of class 'data.frame', 'selection_table' or 'extended_selection_table' (the last 2 classes are created by the function \code{\link[warbleR]{selection_table}} from the warbleR package) with the master sound file annotations. This should be the same data than that was used for finding the position of markers in \code{\link{find_markers}}. It should also contain a 'sound.id' column.
 #' @param ovlp Numeric vector of length 1 specifying the percentage of overlap between two consecutive windows, as in \code{\link[seewave]{spectro}}. Default is 0. Can be set globally for the current R session via the "ovlp" option (see \code{\link[base]{options}}).
 #' @param collevels A numeric vector of length 3. Specifies levels to partition the amplitude range of the spectrogram (in dB). The more levels the higher the resolution of the spectrogram. Default is seq(-120, 0, 1).
@@ -32,7 +32,7 @@
 #' @examples
 #' {
 #'   # load example data
-#'   data("master_est")
+#'   data(list = c("master_est", "test_sounds_est"))
 #'
 #'   # save example files in working director to recreate a case in which working
 #'   # with sound files instead of extended selection tables.
@@ -50,7 +50,7 @@
 #'   path = tempdir())
 #'
 #'   # align all test sounds
-#'   alg.tests <- align_test_files(X = master_est, Y = markers)
+#'   alg.tests <- align_test_files(X = master_est, Y = markers, path = tempdir())
 #'
 #'   # add error to alignment
 #'   lag <- (as.numeric(as.factor(alg.tests$sound.files)) - 2) / 30
@@ -64,9 +64,8 @@
 #'  }
 #' }
 #' @author Marcelo Araya-Salas (\email{marcelo.araya@@ucr.ac.cr})
-#' @references {
-#' Araya-Salas M., E. Grabarczyk, M. Quiroz-Oliva, A. Garcia-Rodriguez, A. Rico-Guevara. (2023), baRulho: an R package to quantify degradation in animal acoustic signals .bioRxiv 2023.11.22.568305.
-#' }
+#' @references
+#' Araya-Salas, M., Grabarczyk, E. E., Quiroz-Oliva, M., Garcia-Rodriguez, A., & Rico-Guevara, A. (2025). Quantifying degradation in animal acoustic signals with the R package baRulho. Methods in Ecology and Evolution, 00, 1-12. https://doi.org/10.1111/2041-210X.14481
 
 manual_realign <-
   function(X,
@@ -115,9 +114,9 @@ manual_realign <-
     if (!all(sapply(unique(X$sound.files), function(x)
       sum(X$sound.files == x &
           X$sound.id == marker))))
-      .stop("at least 1 sound file does not have 'marker' in 'sound.id' column in 'X'")
+      .stop("at least 1 sound file does not have the supplied 'marker' in 'sound.id' column in 'X'")
     if (!marker %in% Y$sound.id)
-      .stop("'marker' not found in 'sound.id' column in 'Y'")
+      .stop("supplied 'marker' not found in 'sound.id' column in 'Y'")
     
     # set external window function
     if (any(Sys.info()[1] == c("Linux", "Windows")))

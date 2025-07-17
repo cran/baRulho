@@ -185,7 +185,7 @@
   function(libname, pkgname) {
     packageStartupMessage("\nPlease cite 'baRulho' as: \n")
     packageStartupMessage(
-      "Araya-Salas M., E. Grabarczyk, M. Quiroz-Oliva, A. Garcia-Rodriguez, A. Rico-Guevara. (2023), baRulho: an R package to quantify degradation in animal acoustic signals .bioRxiv 2023.11.22.568305."
+      "Araya-Salas, M., Grabarczyk, E. E., Quiroz-Oliva, M., Garcia-Rodriguez, A., & Rico-Guevara, A. (2025). Quantifying degradation in animal acoustic signals with the R package baRulho. Methods in Ecology and Evolution, 00, 1-12. https://doi.org/10.1111/2041-210X.14481"
     )
     
     invisible(TRUE)
@@ -1153,7 +1153,7 @@
     } else {
       return(NULL)
     }
- 
+    
   }
 
 # function to extract envelopes from wave objects
@@ -1199,7 +1199,7 @@
     # add little variation if all values ar the same so measurements can be taken on in (like envelope correlation)
     if (all(nv == nv[1]))
       nv[1] <- nv[1] + 0.0001
-      
+    
     return(nv)
   }
 
@@ -1338,10 +1338,10 @@
     sig_env_REF <- X$sig_env[X$.sgnl.temp == rfrnc]
     dist_REF <- X$distance[X$.sgnl.temp == rfrnc]
     dist_SIG <- X$distance[y]
-      
+    
     # excess attenuation = (total attenuation - spheric spreading attenuation) 
     ea <- (20 * log10(sig_env_REF / sig_env)) - (-20 * log10(dist_REF / dist_SIG))
-    }
+  }
   
   if (is.infinite(ea))
     ea <- NA
@@ -1367,7 +1367,7 @@
   }
   return(x)
 }  
-  
+
 ## adjust SNR
 .add_noise <-
   function(x,
@@ -1377,7 +1377,9 @@
            max.iterations,
            Y,
            kind,
-           alpha) {
+           alpha,
+           seed,
+           ...) {
     # extract selection as single extended selection table
     Y_x <- Y[x,]
     
@@ -1387,7 +1389,7 @@
     
     # estimate current snr
     snr <-
-      signal_to_noise_ratio(Y_x, mar = mar, pb = FALSE)$signal.to.noise.ratio
+      signal_to_noise_ratio(Y_x, mar = mar, pb = FALSE, ...)$signal.to.noise.ratio
     
     if (snr > target.snr) {
       # reset time coordinates of sounds if lower than 0 o higher than duration
@@ -1415,7 +1417,6 @@
       prop_noise_vector <- vector()
       snr_vector <- vector()
       
-      seed <- 0
       while (all(snr > target.snr + precision |
                  snr < target.snr - precision) &
              length(prop_noise_vector) < max.iterations) {
@@ -1424,13 +1425,16 @@
         N <- length(wav@left)
         
         # ad seed to make it replicable
+        if (!is.null(seed)){
         seed <- seed + 1
         set.seed(seed)
+        }
+        
         # noise_wav <-
         #   runif(n = N,
         #         min = 0,
         #         max = 1)
-
+        
         noise_wav <-
           switch(
             kind,
@@ -1440,7 +1444,7 @@
             power = .TK95(N, alpha = alpha),
             red = .TK95(N, alpha = 1.5)
           )
-
+        
         noise_wav <-
           .force_range(x = noise_wav,
                        min = -1 * prop_noise,
@@ -1450,8 +1454,8 @@
         attributes(Y_x)$wave.objects[[1]] <- wav + noise_wav
         
         snr <- signal_to_noise_ratio(X = Y_x,
-                                mar = mar,
-                                pb = FALSE)$signal.to.noise.ratio
+                                     mar = mar,
+                                     pb = FALSE, ...)$signal.to.noise.ratio
         
         prop_noise_vector[length(prop_noise_vector) + 1] <-
           prop_noise
@@ -1627,11 +1631,11 @@
         
         # get RMS for signal
         sig_rms <- seewave::rms(warbleR::envelope(signal[, 1]))
-       
+        
         # convert to 0.0001 if sig_rms is 0 to avoid errors in SNR measurements
         if (sig_rms == 0)
           sig_rms <- 0.0001
-
+        
         # cut ambient noise before sound
         noise1 <-
           seewave::cutw(noise_sig,
@@ -1668,7 +1672,7 @@
         # get envelopes from ambient selections
         bg_RMS <-
           lapply(rms_list[W$.y[W$sound.files == W$sound.files[y] &
-                                        W$sound.id == "ambient"]], "[", "sig_rms")
+                                 W$sound.id == "ambient"]], "[", "sig_rms")
         
         # get mean RMS from combined envelopes
         bg_RMS <-
@@ -1723,12 +1727,14 @@
            sig2,
            seed,
            hrm.freqs,
-           sampling.rate) {
+           sampling.rate,
+           fr) {
     sm.sng <- warbleR::simulate_songs(
       n = length(frequencies),
       durs = eg$dur[x],
       freqs = frequencies,
       samp.rate = sampling.rate,
+      freq.range = fr,
       gaps = mar * 3 / 2,
       am.amps = if (eg$am[x] == "no.am") {
         1
@@ -1872,15 +1878,15 @@
   if (is.null(wl)) {
     wl <- if (warbleR::is_extended_selection_table(X))
       round(attr(X, "check.results")$sample.rate[1] * hop.size, 0) else
-      round(
-        read_sound_file(
-          X,
-          index = 1,
-          header = TRUE,
-          path = path
-        )$sample.rate * hop.size / 1000,
-        0
-      )
+        round(
+          read_sound_file(
+            X,
+            index = 1,
+            header = TRUE,
+            path = path
+          )$sample.rate * hop.size / 1000,
+          0
+        )
   }
   
   # make wl even if odd
@@ -2280,7 +2286,7 @@
         
         # reduce number of points so polygon printing runs faster
         if (nrow(spc) > 50)
-        spc_list <-
+          spc_list <-
           stats::approx(
             x = spc[, 1],
             y = spc[, 2],
@@ -2381,7 +2387,7 @@
         
         # reduce number of points so polygon printing runs faster
         if (nrow(envlp) > 50)
-        envlp_list <-
+          envlp_list <-
           stats::approx(
             x = envlp[, 1],
             y = envlp[, 2],
@@ -2419,7 +2425,7 @@
           col = "white",
           border = NA
         )
-
+        
         rect(
           0,
           min(envlp[, 2]),
@@ -2754,9 +2760,9 @@
   # check duration
   # import sound data
   master_wave_info <- warbleR::read_sound_file(index = 1,
-                                Y,
-                                header = TRUE,
-                                path = path)
+                                               Y,
+                                               header = TRUE,
+                                               path = path)
   
   # fix to if higher than sound file duration
   master_dur <-
@@ -2930,6 +2936,88 @@
   return(output)
 }
 
+# spot useful sound segments to use as reference background noise
+.spot_ambient_noise <- function(x, length, ovlp, path, fun, cores){
+  
+  # extract sound file info
+  wv_info <- warbleR::read_sound_file(X = x$sound.files[1], path = path, header = TRUE)
+  wv_length <- wv_info$samples / wv_info$sample.rate
+  
+  # get all posible segments of length 'length'
+  segment_sel_tab <- data.frame(sound.files = x$sound.files[1], start = seq(0, wv_length - length, by = length - (length * ovlp / 100)))
+  segment_sel_tab$end <- segment_sel_tab$start + length
+  segment_sel_tab$selec <- 1:nrow(segment_sel_tab)
+  
+  # combine segments and test sound annotations
+  x$..type.. <- "test_sounds"
+  segment_sel_tab$..type.. <- "segments"
+  Y <- rbind(x[, c("sound.files", "selec", "start", "end", "..type..")], segment_sel_tab[, c("sound.files", "selec", "start", "end", "..type..")])
+  
+  # exclude those overlapping with test sounds
+  ovlps <- warbleR::overlapping_sels(X = Y, pb = FALSE, indx.row = TRUE)
+  
+  ovlp_rows <- lapply(ovlps$indx.row, function(x) strsplit(x, split = "/")[[1]])
+  
+  # find segments that do not overlap with test sounds
+  non_ovlps <- ovlps[!sapply(ovlp_rows, function(x) any(x %in% which(ovlps$..type.. == "test_sounds"))),]
+  
+  if (nrow(non_ovlps) > 0){
+    # add frequency range
+    non_ovlps$bottom.freq <- min(x$bottom.freq)
+    non_ovlps$top.freq <- max(x$top.freq)
+    
+    # measure spl
+    segment_spl <- warbleR::sound_pressure_level(non_ovlps, parallel = cores, path = path, pb = FALSE, type = "peak", bp = "freq.range")
+    
+    
+    # find the segment with the highest spl for each sound file
+    segment_spl <- segment_spl[fun(segment_spl$SPL),]
+    
+    # remove extra columns
+    x$..type.. <- segment_spl$indx.row <- segment_spl$ovlp.sels <- segment_spl$SPL <- segment_spl$..type.. <- NULL
+    
+    # add "ambient" sound.id
+    segment_spl$sound.id <- "ambient"
+    
+    # fix selec id
+    if (is.numeric(x$selec)) {
+      segment_spl$selec <- max(x$selec) + 1
+    } else {
+      segment_spl$selec <- "ambnt"
+    }
+    
+    # put both annotation tables into a list
+    anns_list <- list(x, segment_spl)
+    
+    # determine all column names in all selection tables
+    cnms <- unique(unlist(lapply(anns_list, names)))
+    
+    # add columns that are missing to each selection table
+    anns_list <- lapply(anns_list, function(X)
+    {
+      nms <- names(X)
+      if (length(nms) != length(cnms))
+        for (i in cnms[!cnms %in% nms]) {
+          X <-
+            data.frame(X,
+                       NA,
+                       stringsAsFactors = FALSE,
+                       check.names = FALSE)
+          names(X)[ncol(X)] <- i
+        }
+      return(X)
+    })
+    
+    # temporary put together to check sound file name column
+    output_anns <- do.call("rbind", anns_list)
+  } else {
+    x$..type.. <- NULL
+    output_anns <- x
+  }
+  
+  return(output_anns)
+}
+
 
 # add "stop_by_user" and "last file" messages, used by manual_realign
 .stop_by_user <- function(i, xy, xs, grYs, rerec_files) {
@@ -3006,7 +3094,7 @@
     rect(0, 0, 2, 2, col = "white", border = NA)
     rect(0, 0, 2, 2, col = "#366A9FFF", border = NA)
     
-      bottom_lab <-
+    bottom_lab <-
       vapply(as.character(W$sound.files[1]), function(x) {
         if (nchar(x) > 15)
           paste0(substr(x, 0, 15), "\n", substr(x, 16, nchar(x))) else
@@ -3036,9 +3124,9 @@
     
     # import sound data
     wave_info <- warbleR::read_sound_file(index = 1,
-                           W,
-                           header = TRUE,
-                           path = path)
+                                          W,
+                                          header = TRUE,
+                                          path = path)
     
     # fix to if higher than sound file duration
     wave_dur <- wave_info$samples / wave_info$sample.rate
@@ -3087,8 +3175,8 @@
       flim <-
         c(0, wave@samp.rate / 2000.1)
     } # use 2000.1 to avoid errors at the highest of nyquist frequency
-
-
+    
+    
     
     # plot spectrogram
     warbleR:::spectro_wrblr_int2(
@@ -3106,7 +3194,7 @@
       fast.spec = fast.spec,
       ...
     )
-      
+    
     # add white rectangle at the begining if spectrogram shorter than view range
     if (from_stp < 0)
       rect(
@@ -3117,9 +3205,9 @@
         col = "white",
         border = NA
       )
-  
+    
     # add white rectangle at the end if spectrogram shorter than view range
-  if (to_stp > wave_dur)
+    if (to_stp > wave_dur)
       rect(
         par("usr")[2] - to_stp + wave_dur,
         par("usr")[3],
@@ -3390,7 +3478,7 @@
           xy$y < max(rp$grYs$`short right`)) {
         step_sum <- step_sum - min(step.lengths / 1000)
         step_sum_vector[i] <- step_sum
-       
+        
         break
       }
       
@@ -3519,7 +3607,7 @@
   
   # save image of start marker in temporary directory
   if (nzchar(gsexe)) {
-      grDevices::dev2bitmap(temp_file,
+    grDevices::dev2bitmap(temp_file,
                           type = "pngmono",
                           res = 30)
   } else dev.off()
@@ -3535,7 +3623,7 @@
       flim = flim,
       samp.rate = samp_rate / 1000
     )
-
+  
   return(mrkr)
 }
 
@@ -3575,6 +3663,14 @@
       gsub(
         pattern = "Variable 'names(X)': Names",
         replacement = "Columns in 'X':",
+        x = msgs,
+        fixed = TRUE
+      )
+    
+    msgs <-
+      gsub(
+        pattern = "Variable 'names(Y)': Names",
+        replacement = "Columns in 'Y':",
         x = msgs,
         fixed = TRUE
       )
@@ -3674,10 +3770,23 @@
 .assert_unique_sels <-
   checkmate::makeAssertionFunction(.check_unique_sels)
 
+# check a single sound file is found in master annotations
+.check_unique_sound_file <- function(x, fun) {
+  if (length(unique(x$sound.files)) > 1) {
+    "More than one sound file found in column 'sound.files'. Only one sound file is allowed in master annotations"
+  } else {
+    TRUE
+  }
+}
+
+.assert_unique_sound_file <-
+  checkmate::makeAssertionFunction(.check_unique_sound_file)
+
+
 # check if X has any ambient reference in sound id column
 .check_ambient_ref <- function(x, noise.ref) {
-    if (noise.ref == "custom" & !any(x$sound.id == "ambient")) {
-      "'noise.ref = custom' but no 'ambient' label found in 'sound.id' column"
+  if (noise.ref == "custom" & !any(x$sound.id == "ambient")) {
+    "'noise.ref = custom' but no 'ambient' label found in 'sound.id' column"
   } else {
     TRUE
   }
@@ -3714,23 +3823,44 @@
 
 # check unique sound.id
 .check_unique_sound.id <- function(x, fun) {
+  
+  out <- TRUE
   if (!is.null(x$sound.id) & is.null(x$distance)) {
     if (anyDuplicated(paste0(x$sound.files, x$sound.id)) > 0) {
-      "Duplicated 'sound.id' labels are not allowed within a sound file"
+      out <- "Duplicated 'sound.id' labels are not allowed within a sound file"
     }
   }
-  if (!is.null(x$sound.id) & !is.null(x$distance)) {
+  if (!is.null(x$sound.id) & !is.null(x$distance) & fun == "plot_degradation") {
+    if (anyDuplicated(paste0(x$transect, x$sound.id, x$distance)) > 0) {
+      out <- "Duplicated 'sound.id' labels are not allowed within a transect/distance combination"
+    }
+  }
+  if (!is.null(x$sound.id) & !is.null(x$distance) & fun != "plot_degradation") {
     if (anyDuplicated(paste0(x$sound.files, x$sound.id, x$distance)) > 0) {
-      "Duplicated 'sound.id' labels are not allowed within a sound file or sound file/distance combination"
+      out <- "Duplicated 'sound.id' labels are not allowed within a sound file or sound file/distance combination"
     }
   }
-  if (is.null(x$sound.id) & is.null(x$distance)) {
-    TRUE
-  }
+
+  return(out)
 }
 
 .assert_unique_sound.id <-
   checkmate::makeAssertionFunction(.check_unique_sound.id)
+
+
+# check unique sound.id in master annotations
+.check_unique_sound.id_master <- function(x, fun) {
+    
+    out <- TRUE
+        if (anyDuplicated(x$sound.id) > 0) {
+          out <- "Duplicated 'sound.id' labels are not allowed in master annotations"
+        }  
+
+      return(out)
+    }  
+  
+.assert_unique_sound.id_master <-
+  checkmate::makeAssertionFunction(.check_unique_sound.id_master)
 
 # check than more than 1 distance is found
 .check_several_distances <- function(x, fun) {
@@ -3762,7 +3892,7 @@
 .check_extended_selection_table <- function(x) {
   if (!is.null(x)) {
     if (!warbleR::is_extended_selection_table(x)) {
-      "'X' must be of class 'extended_selection_table'"
+      "must be of class 'extended_selection_table'"
     }
   } else {
     TRUE
@@ -3866,6 +3996,8 @@
   
   check_collection <- .check_durations(args, check_collection)
   
+  check_collection <- .check_length(args, check_collection)
+  
   check_collection <- .check_am.amps(args, check_collection)
   
   check_collection <- .check_hrm.freqs(args, check_collection)
@@ -3938,6 +4070,8 @@
   
   check_collection <- .check_path(args, check_collection)
   
+  check_collection <- .check_fun(args, check_collection)
+  
   check_collection <- .check_n.samples(args, check_collection)
   
   check_collection <- .check_hop.size(args, check_collection)
@@ -3970,6 +4104,30 @@
   ### check arguments
   if (any(names(args) == "X")) {
     
+    if (fun == "align_test_files" & !warbleR::is_extended_selection_table(args$X)){
+      .assert_unique_sound_file(
+        x = args$X,
+        fun = fun,
+        add = check_collection,
+        .var.name = "X"
+      )
+    }
+    
+    if   (fun == "auto_realign"){
+      .assert_extended_selection_table(x = args$X,
+                                       add = check_collection,
+                                       .var.name = "X")
+    } 
+    
+    if (fun == "align_test_files") {
+      .assert_unique_sound.id_master(
+        x = args$X,
+        fun = fun,
+        add = check_collection,
+        .var.name = "X"
+      )
+    }
+    
     if (!warbleR::is_extended_selection_table(args$X)) {
       if (!is.null(args$path)) {
         files <- file.path(args$path, unique(args$X$sound.files))
@@ -3989,7 +4147,6 @@
         .var.name = "X$sound.files"
       )
     }
-    
     
     if (fun != "noise_profile") {
       checkmate::assert_data_frame(
@@ -4035,12 +4192,13 @@
       }
       
       # default columns
-      cols <- c("sound.files", "selec", "start", "end", "sound.id")
+      columns <- c("sound.files", "selec", "start", "end", "sound.id")
       
       # overwrite for other functions
-      if (fun == "master_sound_file") {
-        cols <- c("sound.files", "selec", "start", "end")
+      if (fun %in% c("master_sound_file", "signal_to_noise_ratio", "add_noise")) {
+        columns <- c("sound.files", "selec", "start", "end")
       }
+      
       # functions that compare by distance
       if (fun %in% c(
         "blur_ratio",
@@ -4053,7 +4211,7 @@
         "spectrum_correlation",
         "plot_degradation"
       )) {
-        cols <-
+        columns <-
           c("sound.files",
             "selec",
             "start",
@@ -4076,13 +4234,12 @@
           x = args$X,
           fun = fun,
           add = check_collection,
-          .var.name = "X$distances"
+          .var.name = "X$distance"
         )
       }
       
-      
       if (fun == "set_reference_sounds") {
-        cols <- c("sound.files",
+        columns <- c("sound.files",
                   "selec",
                   "start",
                   "end",
@@ -4102,7 +4259,7 @@
       checkmate::assert_names(
         x = names(args$X),
         type = "unique",
-        must.include = cols,
+        must.include = columns,
         add = check_collection,
         disjunct.from = if (fun == "set_reference_sounds") {
           "reference"
@@ -4112,7 +4269,7 @@
         .var.name = "names(X)"
       )
       try(checkmate::assert_data_frame(
-        x = args$X[, cols],
+        x = args$X[, columns],
         any.missing = TRUE,
         add = check_collection,
         .var.name = "X"
@@ -4126,12 +4283,14 @@
         .var.name = "X"
       )
       
+      if (fun != "align_test_files"){
       .assert_unique_sound.id(
         x = args$X,
         fun = fun,
         add = check_collection,
         .var.name = "X"
       )
+      }
       
       if (!fun %in% c(
         "plot_aligned_sounds",
@@ -4142,6 +4301,14 @@
         "add_noise"
       )) {
         if (warbleR::is_extended_selection_table(args$X)) {
+          
+          if (fun == "spot_ambient_noise") {
+            .stop(
+              "Extended selection table in 'X' are not supported (only data frames and (non-extended) selection tables)"
+            )
+          }  
+          
+          
           if (length(unique(attr(args$X, "check.results")$sample.rate)) > 1) {
             .stop(
               "all wave objects in the extended selection table must have the same sampling rate (they can be homogenized using warbleR::resample_est())"
@@ -4151,7 +4318,9 @@
           if (!fun %in% c("find_markers",
                           "align_test_files",
                           "set_reference_sounds",
-                          "add_noise")) {
+                          "add_noise",
+                          "spot_ambient_noise",
+                          "auto_realign")) {
             .warning("assuming all sound files have the same sampling rate")
           }
           
@@ -4185,8 +4354,6 @@
         add = check_collection,
         .var.name = "X"
       )
-      
-      
     }
   }
   return(check_collection)
@@ -4266,6 +4433,19 @@
       add = check_collection,
       .var.name = "srt",
       null.ok = FALSE
+    )
+  }
+  return(check_collection)
+}
+
+.check_sig2 <- function(args, check_collection) {
+  if (any(names(args) == "sig2")) {
+    checkmate::assert_number(
+      x = args$sig2,
+      add = check_collection,
+      lower = 0.00001,
+      .var.name = "sig2",
+      null.ok = TRUE
     )
   }
   return(check_collection)
@@ -4570,6 +4750,20 @@
   return(check_collection)
 }
 
+.check_length <- function(args, check_collection) {
+  if (any(names(args) == "length")) {
+    checkmate::assert_number(
+      x = args$length,
+      lower = 0.00001,
+      add = check_collection,
+      .var.name = "length",
+      null.ok = FALSE,
+      na.ok = FALSE
+    )
+  }
+  return(check_collection)
+}
+
 .check_collevels <- function(args, check_collection) {
   if (any(names(args) == "collevels")) {
     checkmate::assert_numeric(
@@ -4804,17 +4998,12 @@
 }
 
 .check_marker <- function(args, check_collection, fun) {
-  if (fun != "manual_realign" & any(names(args) == "marker")) {
+  if (!(fun %in% c("manual_realign", "align_test_files")) & any(names(args) == "marker")) {
     .assert_deprecated(x = args$marker,
                        add = check_collection,
                        .var.name = "marker")
   }
   
-  if (fun != "manual_realign" & any(names(args) == "marker")) {
-    .assert_deprecated(x = args$marker,
-                       add = check_collection,
-                       .var.name = "marker")
-  }
   return(check_collection)
 }
 
@@ -4872,6 +5061,18 @@
       access = "r",
       add = check_collection,
       .var.name = "path"
+    )
+  }
+  return(check_collection)
+}
+
+.check_fun <- function(args, check_collection) {
+  if (any(names(args) == "fun")) {
+    checkmate::assert_function(
+      x = args$fun, 
+      null.ok = FALSE,
+      add = check_collection,
+      .var.name = "fun"
     )
   }
   return(check_collection)
@@ -5105,7 +5306,64 @@
                         add = check_collection,
                         .var.name = "Y")
     
-   }
+  }
+    
+    # default columns
+    columns <- c("sound.files", "selec", "start", "end", "marker", "scores")
+    
+    # overwrite for other functions
+    if (fun == "manual_realign"  & !warbleR::is_extended_selection_table(args$Y)) {
+      
+      .assert_unique_sound_file(
+        x = args$Y,
+        fun = fun,
+        add = check_collection,
+        .var.name = "Y"
+      )
+      
+      columns <- c("sound.files", "selec", "start", "end", "sound.id")
+    }
+    
+    if (fun == "manual_realign"){
+    checkmate::assert_names(
+      x = names(args$Y),
+      type = "unique",
+      must.include = columns,
+      add = check_collection,
+      .var.name = "names(Y)"
+    )
+  }
+    try(checkmate::assert_data_frame(
+      x = args$Y[, columns],
+      any.missing = TRUE,
+      add = check_collection,
+      .var.name = "Y"
+    ),
+    silent = TRUE)
+    
+    .assert_unique_sels(
+      x = args$Y,
+      fun = fun,
+      add = check_collection,
+      .var.name = "Y"
+    )
+
+    if   (fun == "auto_realign"){
+      .assert_extended_selection_table(x = args$Y,
+                                       add = check_collection,
+                                       .var.name = "Y")
+    }
+    
+    if (fun %in% c("auto_realign", "manual_realign")) {
+      .assert_unique_sound.id_master(
+        x = args$Y,
+        fun = fun,
+        add = check_collection,
+        .var.name = "Y"
+      )
+    }
+    
+    
     }
   return(check_collection)
 }

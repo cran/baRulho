@@ -48,16 +48,16 @@ knitr::opts_chunk$set(
 )
 
 ## ----eval=FALSE-----------------------------------------------------------------------------------
-#  
-#  # load packages
-#  library(baRulho)
-#  library(viridis)
-#  library(ggplot2)
-#  
-#  # load example data
-#  data("test_sounds_est")
-#  
-#  test_sounds_est
+# 
+# # load packages
+# library(baRulho)
+# library(viridis)
+# library(ggplot2)
+# 
+# # load example data
+# data("test_sounds_est")
+# 
+# test_sounds_est
 
 ## ----eval = TRUE, echo = FALSE, message=FALSE-----------------------------------------------------
 
@@ -80,9 +80,9 @@ unique(test_sounds_est$sound.files)
 
 
 ## ----eval = FALSE---------------------------------------------------------------------------------
-#  
-#  table(test_sounds_est$sound.id, test_sounds_est$distance)
-#  
+# 
+# table(test_sounds_est$sound.id, test_sounds_est$distance)
+# 
 
 ## ----eval = TRUE, echo=FALSE----------------------------------------------------------------------
 
@@ -92,12 +92,12 @@ tb <- as.data.frame.matrix(table(test_sounds_est$sound.id, test_sounds_est$dista
 
 
 ## ----eval = FALSE---------------------------------------------------------------------------------
-#  
-#  # add reference column
-#  test_sounds_est <- set_reference_sounds(test_sounds_est, method = 1)
-#  
-#  # print
-#  test_sounds_est
+# 
+# # add reference column
+# test_sounds_est <- set_reference_sounds(test_sounds_est, method = 1)
+# 
+# # print
+# test_sounds_est
 
 ## ----echo = FALSE---------------------------------------------------------------------------------
 
@@ -138,10 +138,10 @@ knitr::include_graphics(basename(degrad_imgs[1]))
 
 
 ## ----eval = FALSE---------------------------------------------------------------------------------
-#  
-#  # run blur ratio
-#  br <- blur_ratio(X = test_sounds_est)
-#  
+# 
+# # run blur ratio
+# br <- blur_ratio(X = test_sounds_est)
+# 
 
 ## ----eval = TRUE, echo = FALSE--------------------------------------------------------------------
 
@@ -150,9 +150,9 @@ br <- blur_ratio(test_sounds_est)
 
 
 ## ----eval = FALSE---------------------------------------------------------------------------------
-#  
-#  # see output
-#  br
+# 
+# # see output
+# br
 
 ## ----echo = FALSE---------------------------------------------------------------------------------
 
@@ -174,13 +174,19 @@ head(blur_imgs)
 # fc <- file.copy(from = aligned_imgs[1:2], 
 #           to = file.path("../man/figures", basename(aligned_imgs[c(1, 4)])))
 
-fc <- file.copy(from = blur_imgs[1], 
+fc <- file.copy(from = blur_imgs[1],
           to = file.path("../vignettes", basename(blur_imgs[1])), overwrite = TRUE)
 
 
 ## ----echo=FALSE-----------------------------------------------------------------------------------
 
+# knitr::include_graphics("../vignettes/temp.img.jpeg")
 knitr::include_graphics(basename(blur_imgs[1]))
+
+
+## ----echo=FALSE-----------------------------------------------------------------------------------
+
+# unlink("../vignettes/temp.img.jpeg")
 
 
 ## -------------------------------------------------------------------------------------------------
@@ -217,10 +223,10 @@ ggplot(envs, aes(x = time, y = amp, col = distance)) +
 
 
 ## ----eval = FALSE---------------------------------------------------------------------------------
-#  
-#  # run Spectrum blur ratio
-#  sbr <- spectrum_blur_ratio(test_sounds_est)
-#  
+# 
+# # run Spectrum blur ratio
+# sbr <- spectrum_blur_ratio(test_sounds_est)
+# 
 
 ## ----eval = TRUE, echo = FALSE--------------------------------------------------------------------
 
@@ -229,16 +235,16 @@ sbr <- spectrum_blur_ratio(test_sounds_est)
 
 
 ## ----eval = FALSE, echo = FALSE-------------------------------------------------------------------
-#  
-#  sbr <- spectrum_blur_ratio(test_sounds_est)
-#  
-#  # make the gif here
-#  # https://ezgif.com
+# 
+# sbr <- spectrum_blur_ratio(test_sounds_est)
+# 
+# # make the gif here
+# # https://ezgif.com
 
 ## ----eval = FALSE---------------------------------------------------------------------------------
-#  
-#  # see output
-#  sbr
+# 
+# # see output
+# sbr
 
 ## ----echo = FALSE---------------------------------------------------------------------------------
 
@@ -267,8 +273,8 @@ ea <- excess_attenuation(test_sounds_est)
 
 
 ## ----eval = FALSE---------------------------------------------------------------------------------
-#  # print output
-#  ea
+# # print output
+# ea
 
 ## ----echo = FALSE---------------------------------------------------------------------------------
 
@@ -282,8 +288,8 @@ ec <- envelope_correlation(test_sounds_est)
 
 
 ## ----eval = FALSE---------------------------------------------------------------------------------
-#  # print output
-#  ec
+# # print output
+# ec
 
 ## ----echo = FALSE---------------------------------------------------------------------------------
 
@@ -297,8 +303,8 @@ sc <- spectrum_correlation(test_sounds_est)
 
 
 ## ----eval = FALSE---------------------------------------------------------------------------------
-#  # print output
-#  sc
+# # print output
+# sc
 
 ## ----echo = FALSE---------------------------------------------------------------------------------
 
@@ -316,8 +322,8 @@ snr <-
 
 
 ## ----eval = FALSE---------------------------------------------------------------------------------
-#  # print output
-#  snr
+# # print output
+# snr
 
 ## ----echo = FALSE---------------------------------------------------------------------------------
 
@@ -331,9 +337,9 @@ tsr <- tail_to_signal_ratio(test_sounds_est, tsr.formula = 1, mar = 0.05)
 
 
 ## ----eval = FALSE---------------------------------------------------------------------------------
-#  # print output
-#  
-#  tsr
+# # print output
+# 
+# tsr
 
 ## ----echo = FALSE---------------------------------------------------------------------------------
 
@@ -347,8 +353,8 @@ sc <- spcc(X = test_sounds_est, wl = 512)
 
 
 ## ----eval = FALSE---------------------------------------------------------------------------------
-#  # print output
-#  sc
+# # print output
+# sc
 
 ## ----echo = FALSE---------------------------------------------------------------------------------
 
@@ -362,8 +368,8 @@ np <-
   noise_profile(X = test_sounds_est[test_sounds_est$distance > 5,], mar = 0.05)
 
 ## ----eval = FALSE---------------------------------------------------------------------------------
-#  # print output
-#  head(np, 20)
+# # print output
+# head(np, 20)
 
 ## ----echo = FALSE---------------------------------------------------------------------------------
 
