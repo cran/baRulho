@@ -219,7 +219,7 @@ seewave::spectro(
 Rraven::exp_raven(master_annotations, path = tempdir(),
                   file.name = "example_master_selection_table")
 
-## -------------------------------------------------------------------------------------------------
+## ----echo = FALSE---------------------------------------------------------------------------------
 knitr::include_graphics("example_master_table.jpg")
 
 ## ----eval = TRUE----------------------------------------------------------------------------------
