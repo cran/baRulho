@@ -30,11 +30,13 @@
 #'
 #'   # get power spectra
 #'   sbr <- spectrum_blur_ratio(X = X, spectra = TRUE)
+#'   
+#'   \donttest{
+#'   # plot spectra
 #'   spctr <- attributes(sbr)$spectra
 #'
 #'   # make distance a factor for plotting
 #'   spctr$distance <- as.factor(spctr$distance)
-#'
 #'   
 #'   # plot
 #'   rlang::check_installed("ggplot2")
@@ -48,6 +50,7 @@
 #'   labs(x = "Frequency (kHz)", y = "Amplitude (PMF)") +
 #'   coord_flip() +
 #'   theme_classic()
+#'   }
 #' }
 #'
 #' @seealso \code{\link{blur_ratio}}
@@ -70,16 +73,22 @@ spectrum_blur_ratio <-
            path = getOption("sound.files.path", "."),
            n.bins = 100) {
     # check arguments
-    arguments <- as.list(base::match.call())
-    
-    # add objects to argument names
-    for (i in names(arguments)[-1]) {
-      arguments[[i]] <- get(i)
-    }
-    
-    # check each arguments
-    check_results <-
-      .check_arguments(fun = arguments[[1]], args = arguments)
+    check_results <- .check_arguments(
+      fun = "spectrum_blur_ratio",
+      args = list(
+        X = X,
+        cores = cores,
+        pb = pb,
+        spec.smooth = spec.smooth,
+        spectra = spectra,
+        res = res,
+        hop.size = hop.size,
+        wl = wl,
+        ovlp = ovlp,
+        path = path,
+        n.bins = n.bins
+      )
+    )
     
     # report errors
     .report_assertions(check_results)

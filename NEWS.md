@@ -1,3 +1,12 @@
+baRulho 2.1.7
+=========================
+
+### MINOR IMPROVEMENTS
+
+* Fix bug in `manual_realign()` that ask for a 'scores' column in Y
+
+* Improve argument validation 
+
 baRulho 2.1.6
 =========================
 

@@ -399,8 +399,7 @@ rts <- baRulho::auto_realign(X = unaligned_test_sounds_est, Y = master_est)
 #   sel.labels = NULL
 # )
 
-## ----session info, echo=F-------------------------------------------------------------------------
-
+## ----session info---------------------------------------------------------------------------------
 sessionInfo()
 
 
